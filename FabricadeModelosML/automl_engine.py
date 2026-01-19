@@ -1,3 +1,9 @@
+# AutoML com:
+# - Feature engineering
+# - Validação cruzada
+# - 20+ modelos
+# - Ranking gráfico
+
 import pandas as pd  # Importa a biblioteca pandas para manipulação de dados
 import os  # Importa a biblioteca os para interações com o sistema operacional
 import joblib  # Importa a biblioteca joblib para salvar e carregar modelos
