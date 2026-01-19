@@ -1,35 +1,18 @@
-🏭 FábricaDeModelo 2.0
+Desenvolvendo uma plataforma AutoML em Python que treina, compara, escolhe o melhor modelo de Machine Learning e gera relatórios automaticamente — tudo com interface web e versão desktop (.EXE).
 
-Desenvolvendo um sistema AutoML em Python com interface web que transforma qualquer CSV ou Excel em um modelo de Machine Learning treinado automaticamente, gera relatório em PDF e permite fazer previsões em novos arquivos.
-
-🚀 O que é a FábricaDeModelo?
-
-A FábricaDeModelo é uma aplicação web que:
-
-📂 Lê arquivos CSV ou Excel
-
-🧹 Faz limpeza automática dos dados
-
-🧠 Detecta se o problema é classificação ou regressão
-
-🏗️ Treina vários modelos de Machine Learning automaticamente
-
-🏆 Escolhe o melhor modelo
-
-📊 Gera gráfico comparativo
-
-📄 Gera relatório em PDF automático
-
-💾 Salva o modelo treinado
-
-🔮 Permite subir outro arquivo e gerar previsões
-
-📁 Organiza tudo por projeto
-
-🖥️ Interface
-
-Tela para treinar modelos
-
-Tela para gerar previsões
-
-Tudo roda no navegador (Flask)
+O que este sistema faz?
+✅ Lê arquivos CSV ou Excel
+✅ Detecta automaticamente se o problema é Classificação ou Regressão
+✅ Faz pré-processamento automático dos dados
+✅ Faz feature engineering automático
+✅ Testa 20+ modelos de Machine Learning
+✅ Usa validação cruzada
+✅ Escolhe o melhor modelo automaticamente
+✅ Gera:
+•	Gráficos de performance
+•	Métricas completas
+•	Relatório profissional em PDF
+✅ Possui:
+•	Interface Web (local)
+•	Versão Desktop .EXE
+•	Tela para fazer previsões com novos arquivos
