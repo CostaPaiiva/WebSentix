@@ -74,6 +74,15 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # LÊ O CSV
 
     df = pd.read_csv(caminho_csv)
+    print("📊 Dataset shape:", df.shape)
+    print("📋 Colunas:", df.columns.tolist())
+    print("🎯 Alvo (y) valores únicos:", df.iloc[:, -1].unique())
+    print("❗ Valores nulos no alvo:", df.iloc[:, -1].isna().sum())
+    print("🔎 Tipo do alvo:", df.iloc[:, -1].dtype)
+
+    # Se o dataset for muito pequeno, não usa cross-validation
+    dataset_pequeno = len(df) < 30
+
 
     # Remove colunas completamente vazias
     df = df.dropna(axis=1, how="all")
@@ -82,6 +91,15 @@ def treinar_automl(caminho_csv, pasta_projeto):
 
     X = df.iloc[:, :-1]  # Todas as colunas menos a última
     y = df.iloc[:, -1]   # Última coluna (o que queremos prever)
+    # Remove linhas onde o alvo é nulo
+    mask = y.notna()
+    X = X[mask]
+    y = y[mask]
+
+# Se o alvo for texto, converte para números
+    if y.dtype == "object":
+        y = y.astype("category").cat.codes
+
 
     # DESCOBRE SE É CLASSIFICAÇÃO OU REGRESSÃO
 
@@ -106,7 +124,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
         # Normaliza os números
         ("escalar", StandardScaler()),
         # Cria novas features
-        ("polinomio", PolynomialFeatures(degree=2, include_bias=False))
+        ("polinomio", PolynomialFeatures(degree=2, include_bias=False, interaction_only=True))
     ])
     # PIPELINE PARA DADOS DE TEXTO
 
@@ -136,7 +154,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
             "GradientBoosting": GradientBoostingClassifier(),
             "LogisticRegression": LogisticRegression(max_iter=3000),
             "SVM": SVC(),
-            "KNN": KNeighborsClassifier(),
+            "KNN": KNeighborsClassifier(n_neighbors=3),
             "NaiveBayes": GaussianNB(),
             "DecisionTree": DecisionTreeClassifier()
         }
@@ -149,7 +167,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
             "Ridge": Ridge(),
             "Lasso": Lasso(),
             "SVR": SVR(),
-            "KNN": KNeighborsRegressor(),
+            "KNN": KNeighborsRegressor(n_neighbors=3),
             "DecisionTree": DecisionTreeRegressor()
         }
 
@@ -176,11 +194,14 @@ def treinar_automl(caminho_csv, pasta_projeto):
                 ("modelo", modelo)
             ])
 
-            # Validação cruzada (5 testes)
-            scores = cross_val_score(pipeline_completo, X, y, cv=5)
+            if dataset_pequeno:
+                # Treina e testa no próprio dataset (modo simples)
+                pipeline_completo.fit(X, y)
+                media_score = pipeline_completo.score(X, y)
+            else:
+                scores = cross_val_score(pipeline_completo, X, y, cv=5)
+                media_score = scores.mean()
 
-            # Calcula a média dos scores obtidos
-            media_score = scores.mean()
 
             # Adiciona o modelo e sua média ao ranking
             ranking.append((nome, media_score))
@@ -194,27 +215,44 @@ def treinar_automl(caminho_csv, pasta_projeto):
                 # Guarda o nome do modelo que obteve esse melhor resultado
                 melhor_nome = nome
 
-        except:
-            # Se algum modelo der erro, ele apenas ignora
-            pass
+        except Exception as e:
+            print(f"❌ Erro no modelo {nome}: {e}")
 
-    # ORDENA DO MELHOR PARA O PIOR
 
-    ranking.sort(key=lambda x: x[1], reverse=True)
+        # Remove modelos que deram NaN ou erro
+        ranking = [(n, s) for n, s in ranking if s == s]
 
     # CRIA A PASTA DO PROJETO
 
     os.makedirs(pasta_projeto, exist_ok=True)
 
     # TREINA O MELHOR MODELO FINAL
-
-    melhor_modelo.fit(X, y)
+    if melhor_modelo is None:
+        raise Exception("❌ Nenhum modelo conseguiu treinar com esse dataset. Verifique o CSV.")
 
     # Salva o modelo em arquivo
     caminho_modelo = os.path.join(pasta_projeto, "modelo.pkl")
     # Salva o melhor modelo treinado dentro desse arquivo usando o joblib
     # Isso permite que o modelo seja carregado depois sem precisar treinar novamente
     joblib.dump(melhor_modelo, caminho_modelo)
+        # ===============================
+    # SALVA METADADOS DA VERSÃO
+    # ===============================
+    import json
+    from datetime import datetime
+
+    meta = {
+        "versao": os.path.basename(pasta_projeto),
+        "modelo": melhor_nome,
+        "score": float(melhor_score),
+        "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "producao": False
+    }
+
+    caminho_meta = os.path.join(pasta_projeto, "meta.json")
+
+    with open(caminho_meta, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=4, ensure_ascii=False)
 
     # GERA O GRÁFICO
 
@@ -251,6 +289,18 @@ def treinar_automl(caminho_csv, pasta_projeto):
         f.write(f"\nMelhor modelo: {melhor_nome}\n")
         f.write(f"Score: {melhor_score}\n")
 
-    # RETORNA OS RESULTADOS
 
+# GERA PDF
+
+    from pdf_report import gerar_pdf
+
+    caminho_pdf = os.path.join(pasta_projeto, "relatorio.pdf")
+
+    gerar_pdf(
+        caminho_pdf=caminho_pdf,
+        texto=open(caminho_relatorio, encoding="utf-8").read(),
+        imagem=caminho_grafico
+    )
+        # RETORNA OS RESULTADOS
     return tipo, melhor_nome, melhor_score, caminho_relatorio, caminho_grafico
+

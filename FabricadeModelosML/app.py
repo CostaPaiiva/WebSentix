@@ -6,6 +6,11 @@
 # Gera PDF
 # Faz previsões
 
+import sys
+import os
+sys.path.append(os.path.dirname(__file__))
+# Importa a função que cria versões automaticamente (v1, v2, v3...)
+from versionador import criar_pasta_versao
 # Importa a classe principal do Flask e algumas funções auxiliares
 from flask import Flask, render_template, request, send_file, redirect, url_for
 # Importa o módulo 'os' para manipulação de caminhos e arquivos no sistema operacional
@@ -128,20 +133,16 @@ def index():
         nome_projeto = file.filename.replace(".csv", "")
 
         # Cria o caminho da pasta do projeto dentro de projects/
-        # Exemplo: projects/vendas_2024
+        # Ex: projects/iris
         pasta_projeto = os.path.join(PROJECTS_FOLDER, nome_projeto)
 
-        # TREINAR AUTOML
-        # Chama a função principal do AutoML que:
-        # - Analisa os dados
-        # - Detecta o tipo de problema
-        # - Treina vários modelos
-        # - Escolhe o melhor modelo
-        # - Gera relatório e gráfico
+        pasta_versao, versao = criar_pasta_versao(pasta_projeto)
+
+        # Treina o AutoML normalmente, mas salvando tudo dentro da pasta da versãoL
         tipo, melhor, score, relatorio_txt, grafico = treinar_automl(
-            caminho_csv,       # caminho do CSV enviado pelo usuário
-            pasta_projeto      # pasta onde os resultados serão salvos
-        )
+        caminho_csv, 
+        pasta_versao
+)
 
         # LER RELATÓRIO EM TEXTO
         # Abre o arquivo de relatório .txt que foi gerado pelo AutoML
@@ -150,8 +151,8 @@ def index():
             texto = f.read()
 
         # GERAR PDF
-        # Define o caminho onde o PDF será salvo dentro da pasta do projeto
-        caminho_pdf = os.path.join(pasta_projeto, "relatorio.pdf")
+        # Ex: projects/iris/treinos/v1/relatorio.pdfo
+        caminho_pdf = os.path.join(pasta_versao, "relatorio.pdf")
 
         # Gera o arquivo PDF usando o texto do relatório e o gráfico
         gerar_pdf(caminho_pdf, texto, grafico)
@@ -171,29 +172,43 @@ def index():
 # Exemplo: /dashboard/vendas_2024
 @app.route("/dashboard/<projeto>")
 def dashboard(projeto):
-    # Monta o caminho da pasta do projeto dentro de projects/
-    # Exemplo: projects/vendas_2024
-    pasta = os.path.join(PROJECTS_FOLDER, projeto)
+    # Pasta base do projeto
+    pasta_base = os.path.join("projects", projeto)
 
-    # Abre o arquivo resultado.txt que foi gerado durante o treinamento
-    # Esse arquivo contém o resumo dos resultados dos modelos
-    with open(os.path.join(pasta, "resultado.txt"), encoding="utf-8") as f:
-        # Lê todo o conteúdo do arquivo e guarda na variável texto
+    # Pasta onde ficam as versões treinadas
+    pasta_treinos = os.path.join(pasta_base, "treinos")
+
+    # Lista as versões existentes (v1, v2, v3, ...)
+    versoes = sorted(os.listdir(pasta_treinos))
+
+    # Pega sempre a última versão
+    ultima_versao = versoes[-1]
+
+    # Pasta completa da última versão
+    pasta = os.path.join(pasta_treinos, ultima_versao)
+
+    # Caminhos dos arquivos gerados pelo treino
+    caminho_relatorio = os.path.join(pasta, "resultado.txt")
+    caminho_grafico = os.path.join(pasta, "ranking.png")
+    caminho_meta = os.path.join(pasta, "meta.json")
+
+    # Lê o texto do relatório
+    with open(caminho_relatorio, encoding="utf-8") as f:
         texto = f.read()
 
-    # Define o caminho da imagem do ranking dos modelos
-    # Essa imagem mostra a comparação entre os modelos treinados
-    grafico = f"/{pasta}/ranking.png"
+    # Carrega os metadados
+    import json
+    with open(caminho_meta, encoding="utf-8") as f:
+        meta = json.load(f)
 
-    # Renderiza a página dashboard.html passando:
-    # - o nome do projeto
-    # - o texto do relatório
-    # - o caminho da imagem do gráfico
+    # Renderiza o dashboard passando tudo pra tela
     return render_template(
         "dashboard.html",
         projeto=projeto,
+        versao=ultima_versao,
         texto=texto,
-        grafico=grafico
+        grafico="/" + caminho_grafico.replace("\\", "/"),
+        meta=meta
     )
 
 
@@ -202,13 +217,12 @@ def dashboard(projeto):
 # Exemplo: /baixar_pdf/vendas_2024
 @app.route("/baixar_pdf/<projeto>")
 def baixar_pdf(projeto):
-    # Monta o caminho completo do arquivo PDF dentro da pasta do projeto
-    # Exemplo: projects/vendas_2024/relatorio.pdf
-    caminho = os.path.join(PROJECTS_FOLDER, projeto, "relatorio.pdf")
+    pasta_treinos = os.path.join("projects", projeto, "treinos")
+    versoes = sorted(os.listdir(pasta_treinos))
+    ultima = versoes[-1]
 
-    # Envia o arquivo PDF para o navegador como download
-    # as_attachment=True força o navegador a baixar o arquivo
-    # ao invés de apenas abrir no próprio navegador
+    caminho = os.path.join(pasta_treinos, ultima, "relatorio.pdf")
+
     return send_file(caminho, as_attachment=True)
 
 
@@ -216,6 +230,23 @@ def baixar_pdf(projeto):
 # Essa página aceita:
 # - GET: quando o usuário apenas abre a página
 # - POST: quando o usuário envia um CSV para ser previsto
+import json
+
+@app.route("/versoes/<projeto>")
+def gerenciar_versoes(projeto):
+    pasta_treinos = os.path.join("projects", projeto, "treinos")
+
+    versoes = []
+
+    for v in sorted(os.listdir(pasta_treinos)):
+        caminho_meta = os.path.join(pasta_treinos, v, "meta.json")
+        if os.path.exists(caminho_meta):
+            with open(caminho_meta, encoding="utf-8") as f:
+                meta = json.load(f)
+                versoes.append(meta)
+
+    return render_template("versoes.html", projeto=projeto, versoes=versoes)
+
 @app.route("/prever", methods=["GET", "POST"])
 def pagina_prever():
     # Busca a lista de projetos (modelos treinados) existentes
@@ -279,3 +310,6 @@ if __name__ == "__main__":
     # - Reiniciar o servidor automaticamente quando você altera o código
     app.run(debug=True)
 
+
+from utils.versionamento import listar_versoes
+print(listar_versoes("projects/dados_teste_modelo/treinos"))
