@@ -159,33 +159,70 @@ def baixar_pdf(projeto):
     return send_file(caminho, as_attachment=True)
 
 
+# Cria a rota da página de previsões
+# Essa página aceita:
+# - GET: quando o usuário apenas abre a página
+# - POST: quando o usuário envia um CSV para ser previsto
 @app.route("/prever", methods=["GET", "POST"])
 def pagina_prever():
+    # Busca a lista de projetos (modelos treinados) existentes
     projetos = listar_projetos()
 
+    # Verifica se o usuário enviou o formulário
     if request.method == "POST":
+        # Pega o arquivo CSV enviado pelo usuário
         file = request.files["file"]
+
+        # Pega o nome do projeto escolhido no formulário HTML
+        # Esse projeto indica qual modelo treinado será usado
         projeto = request.form["projeto"]
 
-        # Salva CSV de entrada
+        # SALVAR CSV DE ENTRADA
+        # Salva o CSV enviado pelo usuário na pasta uploads/
+        # e guarda o caminho completo na variável caminho_csv
         caminho_csv = salvar_upload(file)
 
-        # Caminho do modelo treinado
+
+        # DEFINIR CAMINHO DO MODELO
+        # Monta o caminho do arquivo do modelo treinado (.pkl)
+        # Exemplo: projects/vendas_2024/modelo.pkl
         modelo = os.path.join(PROJECTS_FOLDER, projeto, "modelo.pkl")
 
-        # Gera previsões
+        # GERAR PREVISÕES
+        # Chama a função que:
+        # - Carrega o modelo treinado
+        # - Aplica o modelo aos novos dados
+        # - Gera um novo CSV com as previsões
         saida = prever(caminho_csv, modelo)
 
+        # Envia o arquivo com as previsões para download
         return send_file(saida, as_attachment=True)
 
+    # Se o usuário apenas entrou na página (GET),
+    # mostra a tela prever.html com a lista de projetos disponíveis
     return render_template("prever.html", projetos=projetos)
 
 
-# =============================
-# Inicialização
-# =============================
 
+# Inicialização
+
+# Esse bloco só será executado se este arquivo for o programa principal
+# Ou seja: quando você roda no terminal:
+# python app.py
+# Mas NÃO será executado se esse arquivo for importado por outro módulo
 if __name__ == "__main__":
+
+    # Cria a pasta uploads/ se ela ainda não existir
+    # Essa pasta é usada para salvar os arquivos enviados pelos usuários
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+    # Cria a pasta projects/ se ela ainda não existir
+    # Essa pasta guarda todos os projetos, modelos e relatórios gerados
     os.makedirs(PROJECTS_FOLDER, exist_ok=True)
+
+    # Inicia o servidor web do Flask
+    # debug=True faz:
+    # - Mostrar erros detalhados no navegador
+    # - Reiniciar o servidor automaticamente quando você altera o código
     app.run(debug=True)
+
