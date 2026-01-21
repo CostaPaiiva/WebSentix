@@ -1,0 +1,14 @@
+Tipo de problema: regressao
+
+RandomForest: 0.84924678599767
+ExtraTrees: 1.0
+GradientBoosting: 0.9999999992944921
+LinearRegression: 1.0
+Ridge: 0.8989034828558404
+Lasso: 0.7326754169153504
+SVR: 0.22779735313612592
+KNN: 0.4565529350193306
+DecisionTree: 1.0
+
+Melhor modelo: ExtraTrees
+Score: 1.0
