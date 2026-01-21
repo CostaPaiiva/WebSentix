@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>📁 Projetos</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">📁 Histórico de Projetos</h1>
+    <p class="subtitle">Todos os modelos já treinados</p>
+
+    <div class="projects-grid">
+
+        {% for p in projetos %}
+        <div class="card project-card">
+
+            <h2>📦 {{ p }}</h2>
+
+            <div class="project-actions">
+                <a href="/dashboard/{{ p }}" class="btn-primary">📊 Abrir</a>
+                <a href="/comparar/{{ p }}" class="btn-secondary">⚖️ Comparar</a>
+            </div>
+
+        </div>
+        {% endfor %}
+
+        {% if projetos|length == 0 %}
+        <p>Nenhum projeto criado ainda.</p>
+        {% endif %}
+
+    </div>
+
+    <div style="margin-top:50px;">
+        <a href="/" class="btn-secondary big-btn">➕ Novo Projeto</a>
+    </div>
+
+</div>
+
+</body>
+</html>

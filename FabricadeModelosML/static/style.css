@@ -1,6 +1,4 @@
-/* ===========================
-   RESET
-   =========================== */
+
 * {
     box-sizing: border-box;
     font-family: "Segoe UI", Arial, sans-serif;
@@ -238,4 +236,65 @@ body {
     transform: scale(1.07);
     box-shadow:
         0 0 30px rgba(168, 85, 247, 0.4);
+}
+
+/* ===========================
+   PROJETOS
+   =========================== */
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 50px;
+}
+
+.project-card {
+    text-align: center;
+}
+
+.project-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* ===========================
+   TABELA DE COMPARAÇÃO
+   =========================== */
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 16px;
+    border-bottom: 1px solid rgba(168,85,247,0.3);
+    text-align: center;
+}
+
+.compare-table th {
+    color: #a855f7;
+    font-size: 18px;
+}
+
+/* ===========================
+   ANIMAÇÃO DO RANKING
+   =========================== */
+
+.ranking-img {
+    opacity: 0;
+    transform: scale(0.85);
+    animation: aparecerRanking 1.2s ease-out forwards;
+}
+
+@keyframes aparecerRanking {
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

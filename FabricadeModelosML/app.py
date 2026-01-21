@@ -32,6 +32,16 @@ def listar_projetos():
     # Se não existir, retorna lista vazia
     return []
 
+def listar_projetos():
+    # Se a pasta de projetos não existir, retorna lista vazia
+    if not os.path.exists(PROJECTS_FOLDER):
+        return []
+
+    # Retorna apenas as pastas dentro de /projects
+    return [
+        nome for nome in os.listdir(PROJECTS_FOLDER)
+        if os.path.isdir(os.path.join(PROJECTS_FOLDER, nome))
+    ]
 # Funções auxiliares
 
 def salvar_upload(file):
@@ -46,7 +56,50 @@ def salvar_upload(file):
     return caminho
 
 # Rotas
+@app.route("/projetos")
+def historico_projetos():
+    projetos = listar_projetos()
+    return render_template("projetos.html", projetos=projetos)
+    
+@app.route("/comparar/<projeto>")
+def comparar(projeto):
+    pasta = os.path.join(PROJECTS_FOLDER, projeto)
+    caminho = os.path.join(pasta, "resultado.txt")
 
+    resultados = []
+
+    # Lê o arquivo e extrai nome e score
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            if ":" in linha:
+                nome, score = linha.split(":")
+                resultados.append((nome.strip(), float(score.strip())))
+
+    # Separa em listas para o gráfico
+    nomes = [r[0] for r in resultados]
+    scores = [r[1] for r in resultados]
+
+    return render_template(
+        "comparar.html",
+        projeto=projeto,
+        resultados=resultados,
+        nomes=nomes,
+        scores=scores
+    )
+
+
+    # Lê o arquivo e extrai nome e score
+    with open(caminho, encoding="utf-8") as f:
+        for linha in f:
+            if ":" in linha:
+                nome, score = linha.split(":")
+                resultados.append((nome.strip(), float(score.strip())))
+
+    return render_template(
+        "comparar.html",
+        projeto=projeto,
+        resultados=resultados
+    )
 # Cria a rota da página inicial do site
 # Essa página aceita:
 # - GET: quando o usuário apenas abre o site
