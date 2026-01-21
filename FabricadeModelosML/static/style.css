@@ -1,0 +1,36 @@
+body {
+    font-family: Arial, sans-serif;   /* Define a fonte principal da página */
+    background: #0f172a;              /* Cor de fundo escura (azul bem profundo) */
+    color: #e5e7eb;                   /* Cor padrão do texto (cinza claro) */
+    padding: 20px;                    /* Espaçamento interno em toda a página */
+}
+
+h1, h2 {
+    color: #38bdf8;                   /* Define a cor dos títulos (azul claro vibrante) */
+}
+
+.card {
+    background: #020617;              /* Fundo da "card" ainda mais escuro */
+    padding: 20px;                    /* Espaçamento interno dentro da card */
+    border-radius: 12px;              /* Bordas arredondadas */
+    margin-bottom: 20px;              /* Espaço abaixo de cada card */
+    box-shadow: 0 0 10px rgba(0,0,0,0.5); /* Sombra para dar efeito de profundidade */
+}
+
+button {
+    background: #38bdf8;              /* Cor de fundo azul claro */
+    border: none;                     /* Remove a borda padrão */
+    padding: 10px 20px;               /* Espaçamento interno (altura e largura) */
+    border-radius: 8px;               /* Bordas arredondadas */
+    cursor: pointer;                  /* Cursor de mãozinha ao passar por cima */
+    font-weight: bold;                /* Texto em negrito */
+}
+
+a {
+    color: #7dd3fc;                   /* Links em azul mais suave */
+    text-decoration: none;            /* Remove o sublinhado padrão dos links */
+}
+
+pre {
+    white-space: pre-wrap;            /* Mantém quebras de linha e espaços, mas permite quebra automática de texto */
+}
