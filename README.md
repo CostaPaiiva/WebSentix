@@ -1,174 +1,165 @@
-FabricaDeModelosML
+🏭 Fábrica de Modelos ML (FabricaDeModelosML)
 
-Plataforma AutoML em Python que treina, avalia, versiona e compara modelos de Machine Learning automaticamente através de uma interface web.
+Plataforma AutoML local para criação, versionamento, comparação e gerenciamento de modelos de Machine Learning com interface web.
 
 🚀 Visão Geral
 
-O FabricaDeModelosML é uma aplicação que automatiza todo o processo de Machine Learning:
+O FabricaDeModelosML é uma plataforma desenvolvida em Python + Flask que permite:
 
-📥 Upload de dataset (CSV)
+📁 Enviar um dataset CSV
 
-🧠 Detecção automática do tipo de problema:
+🤖 Detectar automaticamente o tipo de problema (Regressão ou Classificação)
 
-Classificação ou Regressão
+🧠 Treinar vários modelos automaticamente (AutoML)
 
-🧹 Pré-processamento automático dos dados
+🏆 Gerar ranking dos modelos
 
-🤖 Treinamento de vários modelos automaticamente
+📊 Criar gráficos de comparação
 
-🏆 Seleção do melhor modelo com base na métrica
+🗂️ Versionar cada treino (v1, v2, v3, ...)
 
-📊 Geração de ranking visual dos modelos
+📄 Gerar relatório PDF automático
 
-🗂️ Versionamento automático de treinos (v1, v2, v3, ...)
+🌐 Visualizar tudo em um dashboard web
 
-📄 Geração de relatório em PDF
+📦 Preparar o projeto para uso real em produção ou como produto
 
-📈 Dashboard web para visualizar resultados
+🖥️ Interface
 
-📦 Estrutura pronta para virar produto real
+🎨 Tema escuro (preto + roxo)
 
-🖥️ Interface Web
+🚀 Dashboard de projetos
 
-A aplicação possui:
+📊 Ranking visual de modelos
 
-Página inicial para upload do dataset
+📈 Gráficos de comparação
 
-Dashboard por projeto
+📁 Histórico de treinos
 
-Histórico de versões de treino
-
-Ranking dos modelos
-
-Download do relatório em PDF
-
-Estrutura pronta para:
-
-Comparação entre versões
-
-Evolução para MLOps
-
-🧠 O que o sistema faz automaticamente?
-
-✔️ Detecta se o problema é classificação ou regressão
-✔️ Limpa e prepara os dados
-✔️ Treina múltiplos modelos
-✔️ Avalia todos
-✔️ Escolhe o melhor
-✔️ Gera gráfico de ranking
-✔️ Salva tudo em versão (v1, v2, v3...)
-✔️ Gera relatório PDF
-✔️ Exibe tudo no dashboard
+📄 Download de relatório em PDF
 
 FabricadeModelosML/
 │
-├── app.py                # Servidor Flask (rotas e páginas)
-├── run_app.py            # Inicializador da aplicação
-├── automl_engine.py      # Coração do AutoML (treino, avaliação, ranking)
-├── predictor.py         # Futuro módulo de inferência/predição
-├── versionador.py       # Sistema de versionamento dos modelos
-├── pdf_report.py        # Gerador de relatório PDF
-├── requirements.txt     # Dependências
+├── app.py                 # Servidor Flask (interface web)
+├── automl_engine.py       # Motor AutoML (treino, ranking, gráficos)
+├── versionador.py         # Sistema de versionamento de modelos
+├── pdf_report.py          # Gerador de relatório em PDF
+├── predictor.py           # Carregar e usar modelos treinados
+├── requirements.txt       # Dependências do projeto
 │
-├── utils/                # Funções auxiliares
+├── static/                # CSS, imagens e assets do frontend
+├── templates/             # HTML do sistema
 │
-├── static/               # CSS e assets
-├── templates/            # HTML (Flask)
+├── uploads/               # Onde os CSVs são enviados
 │
-├── uploads/              # Onde os CSVs são enviados
-│
-├── projects/             # Onde ficam os projetos treinados
+├── projects/              # Projetos treinados
 │   └── nome_do_projeto/
 │       ├── dataset.csv
 │       ├── relatorio.pdf
 │       └── treinos/
 │           ├── v1/
+│           │   ├── modelo.pkl
+│           │   ├── resultado.txt
+│           │   └── ranking.png
 │           ├── v2/
-│           ├── v3/
-│           └── ...
+│           └── v3/
 │
-└── venv/                 # Ambiente virtual (não subir pro Git)
+└── venv/                  # Ambiente virtual Python
 
-🗂️ Sistema de Versionamento de Modelos
+⚙️ Instalação
+1️⃣ Clonar o projeto
+git clone https://github.com/SEU_USUARIO/FabricadeModelosML.git
+cd FabricadeModelosML
 
-Cada vez que você treina novamente um projeto:
-projects/meu_projeto/treinos/
-├── v1/
-├── v2/
-├── v3/
+2️⃣ Criar ambiente virtual
+python -m venv venv
 
-Cada versão guarda:
+3️⃣ Ativar o ambiente
 
-Modelo treinado
+Windows:
 
-Métricas
+venv\Scripts\activate
 
-Ranking
 
-Gráficos
+Linux/Mac:
 
-Dados do treino
+source venv/bin/activate
 
-Isso permite:
+4️⃣ Instalar dependências
+pip install -r requirements.txt
 
-📜 Histórico completo
+▶️ Como Executar
+python app.py
 
-🔁 Comparar evoluções
 
-🧪 Reproduzir experimentos
+Depois acesse no navegador:
 
-🏗️ Base para MLOps real
+http://127.0.0.1:5000
 
-📊 Modelos Usados Atualmente
-Classificação:
+📊 Como Usar
 
-Logistic Regression
+Acesse a página inicial
 
-Random Forest
+Envie um arquivo CSV
 
-KNN
+O sistema:
 
-Naive Bayes
+Detecta o tipo de problema
 
-SVM
+Treina vários modelos
 
-Regressão:
+Cria ranking
 
-Linear Regression
+Salva versão automaticamente
 
-Random Forest Regressor
+Gera gráfico e PDF
 
-KNN Regressor
+Você é redirecionado para o dashboard do projeto
 
-Decision Tree Regressor
+🧠 Sistema de Versionamento
 
-(O sistema escolhe automaticamente quais usar)
+Cada novo treino cria automaticamente:
 
-📈 Métricas
-Classificação:
+projects/nome_do_projeto/treinos/v1
+projects/nome_do_projeto/treinos/v2
+projects/nome_do_projeto/treinos/v3
+...
 
-Accuracy
 
-Regressão:
+Cada versão contém:
 
-R² Score
+✅ modelo.pkl
 
-📄 Relatório PDF
+✅ resultado.txt
 
-O sistema gera automaticamente:
+✅ ranking.png
 
-Resumo do dataset
+🏆 Funcionalidades Principais
 
-Tipo do problema
+✅ AutoML automático
 
-Melhor modelo
+✅ Detecção de regressão ou classificação
 
-Score
+✅ Ranking de modelos
 
-Ranking dos modelos
+✅ Versionamento automático
 
-Gráfico
+✅ Dashboard web
 
-E salva em:
+✅ Gráficos comparativos
 
-projects/nome_do_projeto/relatorio.pdf
+✅ Relatório PDF
+
+✅ Histórico de projetos
+
+🛡️ Tratamento de Erros
+
+O sistema possui:
+
+✔️ Validação de dataset
+
+✔️ Proteção contra CSV inválido
+
+✔️ Proteção contra treino vazio
+
+✔️ Mensagens de erro amigáveis
