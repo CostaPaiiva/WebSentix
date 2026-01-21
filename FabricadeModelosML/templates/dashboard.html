@@ -1,0 +1,27 @@
+<!DOCTYPE html> <!-- Define que o documento segue o padrão HTML5 -->
+<html>
+<head>
+    <title>Dashboard - {{projeto}}</title> <!-- Título da aba do navegador, dinâmico conforme o nome do projeto -->
+    <link rel="stylesheet" href="/static/style.css"> <!-- Importa o arquivo CSS externo para estilização -->
+</head>
+<body>
+
+<h1>📊 Dashboard - {{projeto}}</h1> <!-- Cabeçalho principal exibindo o nome do projeto -->
+
+<div class="card"> <!-- Card para mostrar relatório -->
+    <h3>📄 Relatório</h3> <!-- Subtítulo da seção de relatório -->
+    <pre>{{texto}}</pre> <!-- Exibe o texto do relatório formatado, vindo do backend -->
+</div>
+
+<div class="card"> <!-- Card para mostrar ranking dos modelos -->
+    <h3>📈 Ranking dos Modelos</h3> <!-- Subtítulo da seção de ranking -->
+    <img src="{{grafico}}" style="max-width:100%;"> <!-- Exibe o gráfico gerado dinamicamente, ajustado ao tamanho da tela -->
+</div>
+
+<br>
+<a href="/baixar_pdf/{{projeto}}">📄 Baixar PDF</a> <!-- Link para baixar o relatório em PDF -->
+<br><br>
+<a href="/">⬅ Voltar</a> <!-- Link para voltar à página inicial -->
+
+</body>
+</html>
