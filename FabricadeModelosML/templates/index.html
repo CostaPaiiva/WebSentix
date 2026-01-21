@@ -1,36 +1,58 @@
-<!DOCTYPE html> <!-- Define que o documento segue o padrão HTML5 -->
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-    <title>Fábrica de Modelos</title> <!-- Título exibido na aba do navegador -->
-    <link rel="stylesheet" href="/static/style.css"> <!-- Importa o arquivo CSS externo para estilizar a página -->
+    <meta charset="UTF-8">
+    <title>🏭 Fábrica de Modelos</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>🏭 Fábrica de Modelos</h1> <!-- Cabeçalho principal da página -->
-
-<div class="card"> <!-- Container estilizado como "card" -->
-    <h2>🚀 Treinar novo modelo</h2> <!-- Subtítulo da seção de treino -->
-
-    <!-- Formulário para upload de arquivo -->
-    <form method="POST" enctype="multipart/form-data"> <!-- Define envio via POST e permite upload de arquivos -->
-        <input type="file" name="file" required> <!-- Campo para selecionar um arquivo obrigatório -->
-        <br><br>
-        <button type="submit">Treinar</button> <!-- Botão que envia o arquivo para treinar o modelo -->
-    </form>
+<!-- Overlay de loading (fica escondido até clicar em Treinar) -->
+<div id="loading-overlay">
+    <div class="loader-card">
+        <div class="spinner"></div>
+        <h2>🧠 Treinando modelos...</h2>
+        <p>Isso pode levar alguns minutos.<br>Não feche o navegador.</p>
+    </div>
 </div>
 
-<div class="card"> <!-- Outro card para listar projetos -->
-    <h2>📂 Projetos existentes</h2> <!-- Subtítulo da seção de projetos -->
-    <ul>
-        <!-- Estrutura de template Jinja (Flask) para iterar sobre a lista 'projetos' -->
-        {% for p in projetos %}
-            <li><a href="/dashboard/{{p}}">{{p}}</a></li> <!-- Cada projeto vira um link para seu dashboard -->
-        {% endfor %}
-    </ul>
+<!-- Conteúdo normal da página -->
+<div class="container">
+
+    <h1 class="title">🏭 Fábrica de Modelos</h1>
+    <p class="subtitle">
+        Crie modelos de Machine Learning automaticamente a partir de CSV
+    </p>
+
+    <div class="card big-card">
+        <h2>🚀 Treinar novo modelo</h2>
+
+        <form method="POST" enctype="multipart/form-data" class="train-form" onsubmit="mostrarLoading()">
+
+            <!-- Botão de escolher arquivo -->
+            <label class="file-label">
+                📂 Escolher arquivo CSV
+                <input type="file" name="file" required>
+            </label>
+
+            <!-- Botão de treinar -->
+            <button type="submit" class="btn-primary big-btn">
+                ⚙️ Treinar Modelo
+            </button>
+
+        </form>
+    </div>
+
 </div>
 
-<br>
-<a href="/prever">🔮 Fazer previsões</a> <!-- Link para acessar a página de previsões -->
+<!-- Script que mostra a tela de loading -->
+<script>
+function mostrarLoading() {
+    // Mostra o overlay de carregamento
+    document.getElementById("loading-overlay").style.display = "flex";
+}
+</script>
 
 </body>
 </html>
+

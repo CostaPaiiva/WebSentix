@@ -1,27 +1,59 @@
-<!DOCTYPE html> <!-- Define que o documento segue o padrão HTML5 -->
-<html>
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-    <title>Dashboard - {{projeto}}</title> <!-- Título da aba do navegador, dinâmico conforme o nome do projeto -->
-    <link rel="stylesheet" href="/static/style.css"> <!-- Importa o arquivo CSS externo para estilização -->
+    <meta charset="UTF-8">
+    <title>📊 Dashboard - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>📊 Dashboard - {{projeto}}</h1> <!-- Cabeçalho principal exibindo o nome do projeto -->
+<div class="container">
 
-<div class="card"> <!-- Card para mostrar relatório -->
-    <h3>📄 Relatório</h3> <!-- Subtítulo da seção de relatório -->
-    <pre>{{texto}}</pre> <!-- Exibe o texto do relatório formatado, vindo do backend -->
+    <!-- Título -->
+    <h1 class="title">📊 Projeto: {{ projeto }}</h1>
+    <p class="subtitle">Resultado do treinamento do modelo</p>
+
+    <!-- Grid de cards -->
+    <div class="dashboard-grid">
+
+        <!-- Card do relatório -->
+        <div class="card dashboard-card">
+            <h2>📄 Relatório do Modelo</h2>
+
+            <!-- Caixa com rolagem para o texto -->
+            <div class="report-box">
+                <pre>{{ texto }}</pre>
+            </div>
+        </div>
+
+        <!-- Card do ranking -->
+        <div class="card dashboard-card">
+            <h2>🏆 Ranking dos Modelos</h2>
+
+            <!-- Imagem do gráfico -->
+            <div class="image-box">
+                <img src="{{ grafico }}" alt="Ranking dos modelos">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Área de botões -->
+    <div class="dashboard-actions">
+
+        <!-- Botão de baixar PDF -->
+        <a href="/baixar_pdf/{{ projeto }}" class="btn-primary big-btn">
+            📥 Baixar Relatório em PDF
+        </a>
+
+        <!-- Botão de voltar -->
+        <a href="/" class="btn-secondary big-btn">
+            🔙 Treinar outro modelo
+        </a>
+
+    </div>
+
 </div>
-
-<div class="card"> <!-- Card para mostrar ranking dos modelos -->
-    <h3>📈 Ranking dos Modelos</h3> <!-- Subtítulo da seção de ranking -->
-    <img src="{{grafico}}" style="max-width:100%;"> <!-- Exibe o gráfico gerado dinamicamente, ajustado ao tamanho da tela -->
-</div>
-
-<br>
-<a href="/baixar_pdf/{{projeto}}">📄 Baixar PDF</a> <!-- Link para baixar o relatório em PDF -->
-<br><br>
-<a href="/">⬅ Voltar</a> <!-- Link para voltar à página inicial -->
 
 </body>
 </html>
