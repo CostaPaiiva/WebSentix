@@ -1,56 +1,168 @@
-import os  # Biblioteca para lidar com pastas e arquivos do sistema
+import os
+import json
+import shutil
+from datetime import datetime
+
+
+# CONTROLE DE VERSÕES DE MODELOS
+
 
 def proxima_versao(pasta_projeto):
     """
     Descobre qual é a próxima versão disponível: v1, v2, v3...
     """
-
-    # Pasta onde ficarão todas as versões do projeto
     pasta_treinos = os.path.join(pasta_projeto, "treinos")
 
-    # Se a pasta ainda não existir, então a primeira versão será v1
     if not os.path.exists(pasta_treinos):
         return "v1"
 
-    # Lista todas as pastas dentro de /treinos que começam com "v"
     versoes = [
         nome for nome in os.listdir(pasta_treinos)
-        if nome.startswith("v")
+        if nome.startswith("v") and os.path.isdir(os.path.join(pasta_treinos, nome))
     ]
 
-    # Se ainda não existe nenhuma versão, começa pela v1
     if not versoes:
         return "v1"
 
-    # Pega apenas o número das versões:
-    # Ex: "v3" vira 3
-    numeros = [int(v.replace("v", "")) for v in versoes]
+    numeros = []
+    for v in versoes:
+        try:
+            numeros.append(int(v.replace("v", "")))
+        except:
+            pass
 
-    # Descobre qual é o maior número e soma +1
+    if not numeros:
+        return "v1"
+
     proximo = max(numeros) + 1
-
-    # Retorna no formato: v4, v5, etc
     return f"v{proximo}"
 
 
 def criar_pasta_versao(pasta_projeto):
     """
     Cria a pasta da nova versão e retorna:
-    - o caminho da pasta
-    - o nome da versão (ex: v1, v2)
+    - caminho da pasta
+    - nome da versão (ex: v1, v2)
+    """
+    versao = proxima_versao(pasta_projeto)
+    pasta_versao = os.path.join(pasta_projeto, "treinos", versao)
+    os.makedirs(pasta_versao, exist_ok=True)
+    return pasta_versao, versao
+
+
+
+# HISTÓRICO DE VERSÕES
+
+
+def listar_versoes(pasta_projeto):
+    """
+    Retorna uma lista com todas as versões e seus metadados.
+    """
+    pasta_treinos = os.path.join(pasta_projeto, "treinos")
+
+    if not os.path.exists(pasta_treinos):
+        return []
+
+    versoes = []
+
+    for v in sorted(os.listdir(pasta_treinos)):
+        pasta_v = os.path.join(pasta_treinos, v)
+        if not os.path.isdir(pasta_v):
+            continue
+
+        meta_path = os.path.join(pasta_v, "meta.json")
+
+        if os.path.exists(meta_path):
+            with open(meta_path, encoding="utf-8") as f:
+                meta = json.load(f)
+        else:
+            meta = {
+                "versao": v,
+                "modelo": "desconhecido",
+                "score": None,
+                "data": None,
+                "producao": False
+            }
+
+        versoes.append(meta)
+
+    # Ordena por score (maior primeiro)
+    versoes.sort(key=lambda x: (x["score"] is not None, x["score"]), reverse=True)
+
+    return versoes
+
+
+
+# MODELO EM PRODUÇÃO
+
+
+def definir_como_producao(pasta_projeto, versao):
+    """
+    Marca uma versão como produção e copia o modelo para /producao
     """
 
-    # Descobre qual será a próxima versão
-    versao = proxima_versao(pasta_projeto)
+    pasta_treinos = os.path.join(pasta_projeto, "treinos")
+    pasta_producao = os.path.join(pasta_projeto, "producao")
 
-    # Monta o caminho completo:
-    # projects/iris/treinos/v1
-    pasta_versao = os.path.join(pasta_projeto, "treinos", versao)
+    os.makedirs(pasta_producao, exist_ok=True)
 
-    # Cria a pasta no disco (se não existir)
-    os.makedirs(pasta_versao, exist_ok=True)
+    # Remove flag de produção de todos
+    for v in os.listdir(pasta_treinos):
+        meta_path = os.path.join(pasta_treinos, v, "meta.json")
+        if os.path.exists(meta_path):
+            with open(meta_path, encoding="utf-8") as f:
+                meta = json.load(f)
 
-    # Retorna:
-    # - o caminho da pasta criada
-    # - o nome da versão
-    return pasta_versao, versao
+            meta["producao"] = False
+
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump(meta, f, indent=4, ensure_ascii=False)
+
+    # Marca a versão escolhida
+    pasta_versao = os.path.join(pasta_treinos, versao)
+    meta_path = os.path.join(pasta_versao, "meta.json")
+
+    if not os.path.exists(meta_path):
+        raise Exception("Versão não possui meta.json")
+
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+
+    meta["producao"] = True
+
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=4, ensure_ascii=False)
+
+    # Copia o modelo para produção
+    origem = os.path.join(pasta_versao, "modelo.pkl")
+    destino = os.path.join(pasta_producao, "modelo.pkl")
+
+    if not os.path.exists(origem):
+        raise Exception("modelo.pkl não encontrado na versão")
+
+    shutil.copy2(origem, destino)
+
+
+
+# DADOS PARA GRÁFICOS
+
+
+def dados_para_comparacao(pasta_projeto):
+    """
+    Retorna dados prontos para gráfico:
+    [
+      {"versao": "v1", "score": 0.87},
+      {"versao": "v2", "score": 0.91}
+    ]
+    """
+    versoes = listar_versoes(pasta_projeto)
+
+    dados = []
+    for v in versoes:
+        if v["score"] is not None:
+            dados.append({
+                "versao": v["versao"],
+                "score": v["score"]
+            })
+
+    return dados
