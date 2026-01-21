@@ -1,0 +1,36 @@
+<!DOCTYPE html> <!-- Define que o documento segue o padrão HTML5 -->
+<html>
+<head>
+    <title>FábricaDeModelo 5.0</title> <!-- Título exibido na aba do navegador -->
+    <link rel="stylesheet" href="/static/style.css"> <!-- Importa o arquivo CSS externo para estilizar a página -->
+</head>
+<body>
+
+<h1>🏭 FábricaDeModelo 5.0</h1> <!-- Cabeçalho principal da página -->
+
+<div class="card"> <!-- Container estilizado como "card" -->
+    <h2>🚀 Treinar novo modelo</h2> <!-- Subtítulo da seção de treino -->
+
+    <!-- Formulário para upload de arquivo -->
+    <form method="POST" enctype="multipart/form-data"> <!-- Define envio via POST e permite upload de arquivos -->
+        <input type="file" name="file" required> <!-- Campo para selecionar um arquivo obrigatório -->
+        <br><br>
+        <button type="submit">Treinar</button> <!-- Botão que envia o arquivo para treinar o modelo -->
+    </form>
+</div>
+
+<div class="card"> <!-- Outro card para listar projetos -->
+    <h2>📂 Projetos existentes</h2> <!-- Subtítulo da seção de projetos -->
+    <ul>
+        <!-- Estrutura de template Jinja (Flask) para iterar sobre a lista 'projetos' -->
+        {% for p in projetos %}
+            <li><a href="/dashboard/{{p}}">{{p}}</a></li> <!-- Cada projeto vira um link para seu dashboard -->
+        {% endfor %}
+    </ul>
+</div>
+
+<br>
+<a href="/prever">🔮 Fazer previsões</a> <!-- Link para acessar a página de previsões -->
+
+</body>
+</html>
