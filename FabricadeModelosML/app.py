@@ -25,6 +25,12 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 # Define a pasta para armazenar projetos de modelos
 PROJECTS_FOLDER = "projects"
+def listar_projetos():
+    # Se a pasta projects existir, lista os projetos dentro dela
+    if os.path.exists(PROJECTS_FOLDER):
+        return os.listdir(PROJECTS_FOLDER)
+    # Se não existir, retorna lista vazia
+    return []
 
 # Funções auxiliares
 
@@ -59,18 +65,12 @@ def index():
         if not file:
             return "Nenhum arquivo enviado"
 
-        # ============================
         # SALVAR O ARQUIVO CSV
-        # ============================
-
         # Salva o arquivo CSV na pasta uploads/
         # e guarda o caminho completo dele na variável caminho_csv
         caminho_csv = salvar_upload(file)
 
-        # ============================
         # CRIAR NOME DO PROJETO
-        # ============================
-
         # Usa o nome do arquivo (sem a extensão .csv) como nome do projeto
         nome_projeto = file.filename.replace(".csv", "")
 
