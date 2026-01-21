@@ -30,10 +30,18 @@
         <div class="card dashboard-card">
             <h2>🏆 Ranking dos Modelos</h2>
 
-            <!-- Imagem do gráfico -->
-            <div class="image-box">
-                <img src="{{ grafico }}" alt="Ranking dos modelos" class="ranking-img">
-            </div>
+            <!-- Lista de ranking dentro do card -->
+            <ul class="ranking-list">
+                {% for nome, score in resultados %}
+                    <li
+                        {% if loop.index0 == 0 %}class="top1"{% endif %}
+                        {% if loop.index0 == 1 %}class="top2"{% endif %}
+                        {% if loop.index0 == 2 %}class="top3"{% endif %}
+                    >
+                        {{ nome }} <span>{{ score }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
 
     </div>

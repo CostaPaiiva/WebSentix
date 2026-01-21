@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Modelos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #ffffff, #e6e9ef);
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .ranking-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .ranking-list li {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .ranking-list li span {
+            font-weight: normal;
+            color: #555;
+        }
+
+        .ranking-list li.top1 { background-color: #ffd700; color: #000; } /* Ouro */
+        .ranking-list li.top2 { background-color: #c0c0c0; color: #000; } /* Prata */
+        .ranking-list li.top3 { background-color: #cd7f32; color: #fff; } /* Bronze */
+
+        .ranking-list li:hover {
+            transform: translateX(5px);
+            background-color: #d1e7ff;
+        }
+
+        @media (max-width: 600px) {
+            .ranking-header, .ranking-list li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .ranking-list li span {
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ranking de Modelos de Machine Learning</h1>
+
+        <div class="card">
+            <h2>Top 5 Modelos</h2>
+            <div class="ranking-header">
+                <div>Modelo</div>
+                <div>Score</div>
+            </div>
+            <ul class="ranking-list">
+                <li class="top1">Random Forest <span>0.92</span></li>
+                <li class="top2">XGBoost <span>0.90</span></li>
+                <li class="top3">LightGBM <span>0.88</span></li>
+                <li>Logistic Regression <span>0.85</span></li>
+                <li>KNN <span>0.82</span></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Todos os Modelos Testados</h2>
+            <ul class="ranking-list">
+                <li class="top1">Random Forest <span>0.92</span></li>
+                <li class="top2">XGBoost <span>0.90</span></li>
+                <li class="top3">LightGBM <span>0.88</span></li>
+                <li>Logistic Regression <span>0.85</span></li>
+                <li>KNN <span>0.82</span></li>
+                <li>Decision Tree <span>0.80</span></li>
+                <li>Naive Bayes <span>0.75</span></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

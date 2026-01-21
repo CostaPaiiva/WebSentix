@@ -4,24 +4,108 @@
     font-family: "Segoe UI", Arial, sans-serif;
 }
 
+/* ===========================
+   CONTAINER CENTRALIZADO
+   =========================== */
 body {
-    margin: 0;
-    min-height: 100vh;
-    background: radial-gradient(circle at top, #2b0a3d, #05010a 60%, #000000);
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background: radial-gradient(circle at top, #2b0a3d, #05010a 60%, #000000);
     color: #e5e7eb;
 }
 
-/* ===========================
-   CONTAINER
-   =========================== */
 .container {
     width: 100%;
     max-width: 900px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+}
+
+/* ===========================
+   RANKING
+   =========================== */
+.ranking-box {
+    width: 100%;
+    max-height: 400px; /* define altura máxima */
+    overflow-y: auto;  /* scroll automático */
+    background: rgba(10,0,20,0.85);
+    border-radius: 20px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 40px rgba(168,85,247,0.15);
+    padding: 20px;
+}
+
+/* Lista do ranking */
+.ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Item do ranking */
+.ranking-list li {
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    background: rgba(20,0,40,0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ranking-list li:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(168,85,247,0.5);
+}
+
+/* Top 3 cores */
+.ranking-list li:nth-child(1) {
+    background: linear-gradient(90deg, #FFD700, #FFEA85); /* Ouro */
+    color: #000;
+    font-weight: bold;
+}
+
+.ranking-list li:nth-child(2) {
+    background: linear-gradient(90deg, #C0C0C0, #E0E0E0); /* Prata */
+    color: #000;
+    font-weight: bold;
+}
+
+.ranking-list li:nth-child(3) {
+    background: linear-gradient(90deg, #CD7F32, #E4A56F); /* Bronze */
+    color: #000;
+    font-weight: bold;
+}
+
+/* Outros participantes */
+.ranking-list li:nth-child(n+4) {
+    background: rgba(20,0,40,0.5);
+    color: #e5e7eb;
+}
+
+/* Número do ranking */
+.rank-number {
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+/* Nome do participante */
+.rank-name {
+    flex: 1;
+    text-align: left;
+}
+
+/* Pontuação */
+.rank-score {
+    font-weight: bold;
 }
 
 /* ===========================
