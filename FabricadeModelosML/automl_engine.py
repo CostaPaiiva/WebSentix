@@ -197,7 +197,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
         "metricas": resultados_dict,
         "dataset_shape": list(df.shape),
         "colunas": list(df.columns),
-        "arquivo_dataset": "dataset.csv"
+        "arquivo_dataset": "dataset.csv",
+        "comentario":""
     }
 
     caminho_meta = os.path.join(pasta_projeto, "meta.json")

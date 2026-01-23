@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>🕒 Timeline de Experimentos - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">🕒 Timeline de Experimentos</h1>
+    <p class="subtitle">Projeto: {{ projeto }}</p>
+
+    <div class="timeline">
+
+        {% for v in historico %}
+
+        <div class="timeline-item {% if v.versao == producao %}producao{% endif %}">
+            <div class="timeline-dot"></div>
+
+            <div class="timeline-card">
+
+                <div class="timeline-header">
+                    <span class="versao">🏷️ {{ v.versao }}</span>
+                    <span class="data">📅 {{ v.data }}</span>
+                </div>
+
+                <div class="timeline-body">
+                    <p>🧠 <b>Tipo:</b> {{ v.tipo_problema }}</p>
+                    <p>🥇 <b>Melhor modelo:</b> {{ v.melhor_modelo }}</p>
+                    <p>📈 <b>Score:</b> {{ "%.4f"|format(v.melhor_score) }}</p>
+
+                    <!-- =========================
+                         BLOCO DE COMENTÁRIO
+                    ========================== -->
+
+                    <div class="comentario-box">
+                        <p><b>📝 Comentário:</b></p>
+
+                        {% if v.comentario and v.comentario != "" %}
+                            <div class="comentario-texto">
+                                {{ v.comentario }}
+                            </div>
+                        {% else %}
+                            <div class="comentario-texto vazio">
+                                Nenhum comentário ainda.
+                            </div>
+                        {% endif %}
+
+                        <form method="POST" action="/salvar_comentario/{{ projeto }}/{{ v.versao }}">
+                            <textarea 
+                                name="comentario" 
+                                placeholder="Escreva aqui suas observações sobre este treino..."
+                                class="comentario-input"
+                            >{{ v.comentario or "" }}</textarea>
+
+                            <button type="submit" class="btn-secondary" style="margin-top:10px;">
+                                💾 Salvar comentário
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="timeline-actions">
+                    <a href="/dashboard/{{ projeto }}?versao={{ v.versao }}" class="btn-secondary">🔍 Ver</a>
+                    <a href="/marcar_producao/{{ projeto }}/{{ v.versao }}" class="btn-success">⭐ Produção</a>
+                </div>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div style="margin-top:50px;">
+        <a href="/dashboard/{{ projeto }}" class="btn-secondary big-btn">Voltar</a>
+    </div>
+
+</div>
+
+</body>
+</html>

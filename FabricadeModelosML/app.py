@@ -3,6 +3,7 @@ from version_manager import listar_versoes, marcar_como_producao, versao_em_prod
 import sys
 from version_manager import marcar_como_producao
 import json
+from flask import request, redirect, url_for
 from version_manager import versao_em_producao
 from flask import Flask, render_template, request, send_file, redirect, url_for
 
@@ -130,6 +131,57 @@ def historico(projeto):
         versoes=versoes,
         producao=producao
     )
+@app.route("/timeline/<projeto>")
+def timeline(projeto):
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    historico = []
+
+    for v in sorted(os.listdir(pasta_treinos)):
+        caminho_pasta = os.path.join(pasta_treinos, v)
+        caminho_meta = os.path.join(caminho_pasta, "meta.json")
+        caminho_coment = os.path.join(caminho_pasta, "comentario.txt")
+
+        if os.path.exists(caminho_meta):
+            with open(caminho_meta, encoding="utf-8") as f:
+                meta = json.load(f)
+
+            if os.path.exists(caminho_coment):
+                with open(caminho_coment, encoding="utf-8") as f:
+                    meta["comentario"] = f.read()
+            else:
+                meta["comentario"] = ""
+
+            historico.append(meta)
+
+
+@app.route("/salvar_comentario/<projeto>/<versao>", methods=["POST"])
+def salvar_comentario(projeto, versao):
+    import os, json
+
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_versao = os.path.join(pasta_projeto, versao)
+    caminho_meta = os.path.join(pasta_versao, "meta.json")
+
+    if not os.path.exists(caminho_meta):
+        return "Meta.json não encontrado", 404
+
+    # Lê meta.json atual
+    with open(caminho_meta, "r", encoding="utf-8") as f:
+        meta = json.load(f)
+
+    # Pega comentário do form
+    comentario = request.form.get("comentario", "")
+
+    # Salva no meta
+    meta["comentario"] = comentario
+
+    # Grava de volta
+    with open(caminho_meta, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=4, ensure_ascii=False)
+
+    # Volta pra timeline
+    return redirect(url_for("timeline", projeto=projeto))
 
 @app.route("/comparar/<projeto>")
 def comparar(projeto):
