@@ -42,8 +42,12 @@ def treinar_automl(caminho_csv, pasta_projeto):
     y = y[mask]
 
     # ===============================
-    # DETECTA TIPO
+    # DETECTA TIPO DE PROBLEMA
     # ===============================
+    # - Se for texto/categoria → classificação
+    # - Se for número:
+    #       - Poucos valores únicos → classificação
+    #       - Muitos valores únicos → regressão
 
     if y.dtype == "object":
         tipo = "classificacao"
@@ -51,11 +55,14 @@ def treinar_automl(caminho_csv, pasta_projeto):
     else:
         if y.nunique() <= 15:
             tipo = "classificacao"
+            y = y.astype("category").cat.codes
         else:
             tipo = "regressao"
 
+    print("🧠 Tipo de problema detectado:", tipo)
+
     # ===============================
-    # PIPELINES
+    # PIPELINES DE PRÉ-PROCESSAMENTO
     # ===============================
 
     from sklearn.pipeline import Pipeline
@@ -83,11 +90,12 @@ def treinar_automl(caminho_csv, pasta_projeto):
     ])
 
     # ===============================
-    # MODELOS
+    # MODELOS (SEPARADOS POR TIPO)
     # ===============================
 
     from sklearn.model_selection import cross_val_score
 
+    # Classificação
     from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier
     from sklearn.linear_model import LogisticRegression
     from sklearn.svm import SVC
@@ -95,11 +103,15 @@ def treinar_automl(caminho_csv, pasta_projeto):
     from sklearn.naive_bayes import GaussianNB
     from sklearn.tree import DecisionTreeClassifier
 
+    # Regressão
     from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
     from sklearn.linear_model import LinearRegression, Ridge, Lasso
     from sklearn.svm import SVR
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.tree import DecisionTreeRegressor
+
+    # ⚠️ AQUI É O PONTO CRÍTICO:
+    # Só entram modelos compatíveis com o tipo do problema
 
     if tipo == "classificacao":
         modelos = {
@@ -185,7 +197,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
     shutil.copy(caminho_csv, os.path.join(pasta_projeto, "dataset.csv"))
 
     # ===============================
-    # SALVA META.JSON COMPLETO
+    # SALVA META.JSON
     # ===============================
 
     meta = {
@@ -198,7 +210,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
         "dataset_shape": list(df.shape),
         "colunas": list(df.columns),
         "arquivo_dataset": "dataset.csv",
-        "comentario":""
+        "comentario": ""
     }
 
     caminho_meta = os.path.join(pasta_projeto, "meta.json")

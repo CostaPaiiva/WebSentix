@@ -1,0 +1,19 @@
+{
+    "versao": "v22",
+    "data": "2026-01-23 14:43:41",
+    "tipo_problema": "classificacao",
+    "melhor_modelo": "",
+    "melhor_score": -999999.0,
+    "metricas": {},
+    "dataset_shape": [
+        5,
+        3
+    ],
+    "colunas": [
+        "ID",
+        "Nome",
+        "Valor"
+    ],
+    "arquivo_dataset": "dataset.csv",
+    "comentario": ""
+}

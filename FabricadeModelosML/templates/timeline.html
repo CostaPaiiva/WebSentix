@@ -1,84 +1,52 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>🕒 Timeline de Experimentos - {{ projeto }}</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+@app.route("/timeline/<projeto>")
+def timeline(projeto):
+    import os, json
 
-<div class="container">
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
 
-    <h1 class="title">🕒 Timeline de Experimentos</h1>
-    <p class="subtitle">Projeto: {{ projeto }}</p>
+    if not os.path.exists(pasta_projeto):
+        return f"Projeto {projeto} não encontrado", 404
 
-    <div class="timeline">
+    historico = []
 
-        {% for v in historico %}
+    for versao in os.listdir(pasta_projeto):
+        pasta_versao = os.path.join(pasta_projeto, versao)
 
-        <div class="timeline-item {% if v.versao == producao %}producao{% endif %}">
-            <div class="timeline-dot"></div>
+        if not os.path.isdir(pasta_versao):
+            continue
 
-            <div class="timeline-card">
+        caminho_meta = os.path.join(pasta_versao, "meta.json")
 
-                <div class="timeline-header">
-                    <span class="versao">🏷️ {{ v.versao }}</span>
-                    <span class="data">📅 {{ v.data }}</span>
-                </div>
+        if not os.path.exists(caminho_meta):
+            continue
 
-                <div class="timeline-body">
-                    <p>🧠 <b>Tipo:</b> {{ v.tipo_problema }}</p>
-                    <p>🥇 <b>Melhor modelo:</b> {{ v.melhor_modelo }}</p>
-                    <p>📈 <b>Score:</b> {{ "%.4f"|format(v.melhor_score) }}</p>
+        try:
+            with open(caminho_meta, "r", encoding="utf-8") as f:
+                meta = json.load(f)
 
-                    <!-- =========================
-                         BLOCO DE COMENTÁRIO
-                    ========================== -->
+            # Garante que o campo comentário sempre exista
+            if "comentario" not in meta:
+                meta["comentario"] = ""
 
-                    <div class="comentario-box">
-                        <p><b>📝 Comentário:</b></p>
+            historico.append(meta)
 
-                        {% if v.comentario and v.comentario != "" %}
-                            <div class="comentario-texto">
-                                {{ v.comentario }}
-                            </div>
-                        {% else %}
-                            <div class="comentario-texto vazio">
-                                Nenhum comentário ainda.
-                            </div>
-                        {% endif %}
+        except Exception as e:
+            print("❌ Erro ao ler meta.json de", versao, ":", e)
 
-                        <form method="POST" action="/salvar_comentario/{{ projeto }}/{{ v.versao }}">
-                            <textarea 
-                                name="comentario" 
-                                placeholder="Escreva aqui suas observações sobre este treino..."
-                                class="comentario-input"
-                            >{{ v.comentario or "" }}</textarea>
+    # Ordena por data (mais recente primeiro)
+    historico = sorted(historico, key=lambda x: x.get("data", ""), reverse=True)
 
-                            <button type="submit" class="btn-secondary" style="margin-top:10px;">
-                                💾 Salvar comentário
-                            </button>
-                        </form>
-                    </div>
-                </div>
+    # Descobre qual está em produção
+    producao = None
+    caminho_prod = os.path.join(pasta_projeto, "PRODUCAO.txt")
+    if os.path.exists(caminho_prod):
+        with open(caminho_prod, "r", encoding="utf-8") as f:
+            producao = f.read().strip()
 
-                <div class="timeline-actions">
-                    <a href="/dashboard/{{ projeto }}?versao={{ v.versao }}" class="btn-secondary">🔍 Ver</a>
-                    <a href="/marcar_producao/{{ projeto }}/{{ v.versao }}" class="btn-success">⭐ Produção</a>
-                </div>
-
-            </div>
-        </div>
-
-        {% endfor %}
-
-    </div>
-
-    <div style="margin-top:50px;">
-        <a href="/dashboard/{{ projeto }}" class="btn-secondary big-btn">Voltar</a>
-    </div>
-
-</div>
-
-</body>
-</html>
+    # 🔥 ESSE RETURN É O QUE ESTAVA FALTANDO EM ALGUM CAMINHO
+    return render_template(
+        "timeline.html",
+        projeto=projeto,
+        historico=historico,
+        producao=producao
+    )

@@ -133,26 +133,57 @@ def historico(projeto):
     )
 @app.route("/timeline/<projeto>")
 def timeline(projeto):
-    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+    import os, json
+
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+
+    if not os.path.exists(pasta_projeto):
+        return f"Projeto {projeto} não encontrado", 404
 
     historico = []
 
-    for v in sorted(os.listdir(pasta_treinos)):
-        caminho_pasta = os.path.join(pasta_treinos, v)
-        caminho_meta = os.path.join(caminho_pasta, "meta.json")
-        caminho_coment = os.path.join(caminho_pasta, "comentario.txt")
+    for versao in os.listdir(pasta_projeto):
+        pasta_versao = os.path.join(pasta_projeto, versao)
 
-        if os.path.exists(caminho_meta):
-            with open(caminho_meta, encoding="utf-8") as f:
+        if not os.path.isdir(pasta_versao):
+            continue
+
+        caminho_meta = os.path.join(pasta_versao, "meta.json")
+
+        if not os.path.exists(caminho_meta):
+            continue
+
+        try:
+            with open(caminho_meta, "r", encoding="utf-8") as f:
                 meta = json.load(f)
 
-            if os.path.exists(caminho_coment):
-                with open(caminho_coment, encoding="utf-8") as f:
-                    meta["comentario"] = f.read()
-            else:
+            # Garante campo comentário
+            if "comentario" not in meta:
                 meta["comentario"] = ""
 
             historico.append(meta)
+
+        except Exception as e:
+            print("❌ Erro ao ler meta.json:", caminho_meta, e)
+
+    # Ordena do mais recente para o mais antigo
+    historico = sorted(historico, key=lambda x: x.get("data", ""), reverse=True)
+
+    # Descobre produção
+    producao = None
+    caminho_prod = os.path.join(pasta_projeto, "PRODUCAO.txt")
+    if os.path.exists(caminho_prod):
+        with open(caminho_prod, "r", encoding="utf-8") as f:
+            producao = f.read().strip()
+
+    print("📊 Timeline carregada com", len(historico), "versões")
+
+    return render_template(
+        "timeline.html",
+        projeto=projeto,
+        historico=historico,
+        producao=producao
+    )
 
 
 @app.route("/salvar_comentario/<projeto>/<versao>", methods=["POST"])
@@ -182,6 +213,49 @@ def salvar_comentario(projeto, versao):
 
     # Volta pra timeline
     return redirect(url_for("timeline", projeto=projeto))
+    
+@app.route("/comparar_duas/<projeto>", methods=["GET", "POST"])
+def comparar_duas(projeto):
+    import os, json
+
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+
+    # Lista versões disponíveis
+    versoes = [
+        v for v in os.listdir(pasta_projeto)
+        if os.path.isdir(os.path.join(pasta_projeto, v))
+    ]
+
+    # Recebe versões da querystring (?versoes=v1&versoes=v2)
+    selecionadas = request.args.getlist("versoes")
+
+    meta1 = None
+    meta2 = None
+    v1 = None
+    v2 = None
+
+    if len(selecionadas) == 2:
+        v1, v2 = selecionadas
+
+        def carregar_meta(v):
+            caminho = os.path.join(pasta_projeto, v, "meta.json")
+            with open(caminho, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+        meta1 = carregar_meta(v1)
+        meta2 = carregar_meta(v2)
+
+    return render_template(
+        "comparar_duas.html",
+        projeto=projeto,
+        versoes=versoes,
+        v1=v1,
+        v2=v2,
+        meta1=meta1,
+        meta2=meta2
+    )
+
+
 
 @app.route("/comparar/<projeto>")
 def comparar(projeto):
