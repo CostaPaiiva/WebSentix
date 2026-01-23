@@ -1,4 +1,5 @@
 import os
+from version_manager import listar_versoes, marcar_como_producao, versao_em_producao
 import sys
 import json
 from flask import Flask, render_template, request, send_file, redirect, url_for
@@ -104,6 +105,20 @@ def index():
 
     # Se for GET, apenas mostra a página inicial
     return render_template("index.html", projetos=projetos)
+@app.route("/historico/<projeto>")
+def historico(projeto):
+    pasta_projeto = os.path.join("projetos", projeto)
+
+    versoes = listar_versoes(pasta_projeto)
+    producao = versao_em_producao(pasta_projeto)
+
+    return render_template(
+        "historico.html",
+        projeto=projeto,
+        versoes=versoes,
+        producao=producao
+    )
+
 @app.route("/comparar/<projeto>")
 def comparar(projeto):
     pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")

@@ -1,151 +1,131 @@
-# AutoML com:
-# - Feature engineering
-# - Validação cruzada
-# - 20+ modelos
-# - Ranking gráfico
-
-
-# IMPORTA AS BIBLIOTECAS
-
-
-import pandas as pd              # Para ler e manipular dados
-import os                        # Para criar pastas
-import joblib                    # Para salvar o modelo treinado
-import matplotlib.pyplot as plt  # Para gerar gráfico
-
-# Importa funções para validação cruzada
-from sklearn.model_selection import cross_val_score
-# Importa ferramentas para criar pipelines
-from sklearn.pipeline import Pipeline
-# Importa transformador para aplicar diferentes pré-processamentos em colunas específicas
-from sklearn.compose import ColumnTransformer
-# Importa escalador padrão, codificador one-hot e gerador de features polinomiais
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
-# Importa imputador simples para lidar com valores ausentes
-from sklearn.impute import SimpleImputer
-
-
-# MODELOS DE CLASSIFICAÇÃO
-
-# Importa classificadores baseados em árvores
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier
-# Importa regressão logística para classificação linear
-from sklearn.linear_model import LogisticRegression
-# Importa máquinas de vetores de suporte
-from sklearn.svm import SVC
-# Importa o classificador baseado em vizinhos mais próximos
-from sklearn.neighbors import KNeighborsClassifier
-# Importa o classificador Naive Bayes
-from sklearn.naive_bayes import GaussianNB
-# Importa o classificador baseado em árvores de decisão
-from sklearn.tree import DecisionTreeClassifier
-
-
-# MODELOS DE REGRESSÃO
-
-# Importa o modelo RandomForestRegressor (floresta aleatória para regressão),
-# GradientBoostingRegressor (boosting em árvore para regressão)
-# e ExtraTreesRegressor (floresta extremamente aleatória para regressão)
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
-
-# Importa modelos de regressão linear:
-# LinearRegression = regressão linear simples
-# Ridge = regressão linear com penalização L2 (evita overfitting)
-# Lasso = regressão linear com penalização L1 (pode zerar coeficientes)
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-
-# Importa o SVR (Support Vector Regressor),
-# que é um modelo baseado em máquinas de vetor de suporte para regressão
-from sklearn.svm import SVR
-
-# Importa o KNeighborsRegressor (KNN para regressão),
-# que faz previsões baseadas nos vizinhos mais próximos
-from sklearn.neighbors import KNeighborsRegressor
-
-# Importa o DecisionTreeRegressor (Árvore de Decisão para regressão),
-# que cria regras em forma de árvore para prever valores numéricos
-from sklearn.tree import DecisionTreeRegressor
-
-
-# FUNÇÃO PRINCIPAL DO AUTOML
-
 def treinar_automl(caminho_csv, pasta_projeto):
+    """
+    Função principal que:
+    - Lê o CSV
+    - Descobre se é classificação ou regressão
+    - Treina vários modelos automaticamente
+    - Escolhe o melhor
+    - Salva modelo, gráfico, relatório e meta.json
+    """
 
+    # ===============================
+    # IMPORTA BIBLIOTECAS NECESSÁRIAS
+    # ===============================
+
+    import pandas as pd               # Para ler e manipular dados
+    import os                         # Para criar pastas e caminhos
+    import joblib                     # Para salvar o modelo treinado
+    import json                       # Para salvar o meta.json
+    from datetime import datetime     # Para salvar data e hora
+    import matplotlib.pyplot as plt   # Para gerar gráfico
+
+    # ===============================
     # LÊ O CSV
+    # ===============================
 
-    df = pd.read_csv(caminho_csv)
-    print("📊 Dataset shape:", df.shape)
-    print("📋 Colunas:", df.columns.tolist())
-    print("🎯 Alvo (y) valores únicos:", df.iloc[:, -1].unique())
-    print("❗ Valores nulos no alvo:", df.iloc[:, -1].isna().sum())
-    print("🔎 Tipo do alvo:", df.iloc[:, -1].dtype)
+    df = pd.read_csv(caminho_csv)     # Lê o arquivo CSV para um DataFrame
 
-    # Se o dataset for muito pequeno, não usa cross-validation
-    dataset_pequeno = len(df) < 30
-
-
-    # Remove colunas completamente vazias
+    # Remove colunas 100% vazias
     df = df.dropna(axis=1, how="all")
 
-    # SEPARA ENTRADAS (X) E ALVO (y)
+    print("📊 Dataset shape:", df.shape)
+    print("📋 Colunas:", df.columns.tolist())
 
-    X = df.iloc[:, :-1]  # Todas as colunas menos a última
-    y = df.iloc[:, -1]   # Última coluna (o que queremos prever)
-    # Remove linhas onde o alvo é nulo
+    # ===============================
+    # SEPARA X (entradas) e y (alvo)
+    # ===============================
+
+    X = df.iloc[:, :-1]   # Todas as colunas menos a última
+    y = df.iloc[:, -1]    # Última coluna (alvo)
+
+    # Remove linhas onde o alvo está vazio
     mask = y.notna()
     X = X[mask]
     y = y[mask]
 
-# Se o alvo for texto, converte para números
+    print("🎯 Alvo valores únicos:", y.nunique())
+    print("🔎 Tipo do alvo:", y.dtype)
+
+    # ===============================
+    # DETECTA AUTOMATICAMENTE O TIPO
+    # ===============================
+
+    # Se o alvo é texto → com certeza é classificação
     if y.dtype == "object":
-        y = y.astype("category").cat.codes
+        tipo = "classificacao"
+        y = y.astype("category").cat.codes  # Converte classes para números
 
-
-    # DESCOBRE SE É CLASSIFICAÇÃO OU REGRESSÃO
-
-    # Verifica se o número de valores únicos em y é menor ou igual a 15 e se o tipo de dado não é float
-    if y.nunique() <= 15 and y.dtype != "float":
-        tipo = "classificacao"  # Define como problema de classificação
+    # Se for número:
     else:
-        tipo = "regressao"  # Caso contrário, define como problema de regressão
+        # Se tem poucos valores únicos → provavelmente classificação
+        if y.nunique() <= 15:
+            tipo = "classificacao"
+        else:
+            tipo = "regressao"
 
-    # SEPARA COLUNAS NUMÉRICAS E CATEGÓRICAS
+    print("🤖 Tipo de problema detectado:", tipo)
 
-    # Seleciona colunas numéricas (int e float)
+    # ===============================
+    # DETECTA COLUNAS NUMÉRICAS E TEXTO
+    # ===============================
+
     colunas_numericas = X.select_dtypes(include=["int64", "float64"]).columns
-    # Seleciona colunas categóricas (object e bool)
     colunas_categoricas = X.select_dtypes(include=["object", "bool"]).columns
 
-    # PIPELINE PARA DADOS NUMÉRICOS
+    # ===============================
+    # CRIA PIPELINES DE PRÉ-PROCESSAMENTO
+    # ===============================
 
+    from sklearn.pipeline import Pipeline
+    from sklearn.compose import ColumnTransformer
+    from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
+    from sklearn.impute import SimpleImputer
+
+    # Pipeline para números
     pipeline_numerico = Pipeline(steps=[
-        # Preenche NaN com a mediana
-        ("preencher_vazios", SimpleImputer(strategy="median")),
-        # Normaliza os números
-        ("escalar", StandardScaler()),
-        # Cria novas features
-        ("polinomio", PolynomialFeatures(degree=2, include_bias=False, interaction_only=True))
+        ("preencher", SimpleImputer(strategy="median")),      # Preenche vazios com mediana
+        ("escalar", StandardScaler()),                         # Normaliza os números
+        ("polinomio", PolynomialFeatures(                      # Cria novas features
+            degree=2, include_bias=False, interaction_only=True
+        ))
     ])
-    # PIPELINE PARA DADOS DE TEXTO
 
+    # Pipeline para texto
     pipeline_categorico = Pipeline(steps=[
-        # Preenche com o mais comum
-        ("preencher_vazios", SimpleImputer(strategy="most_frequent")),
-        # Converte texto em números
-        ("onehot", OneHotEncoder(handle_unknown="ignore"))
+        ("preencher", SimpleImputer(strategy="most_frequent")),  # Preenche vazios
+        ("onehot", OneHotEncoder(handle_unknown="ignore"))       # Converte texto em números
     ])
 
-    # JUNTA TUDO
-
-    # Junta os pipelines numéricos e categóricos em um único pré-processador
+    # Junta tudo em um só pré-processador
     pre_processador = ColumnTransformer(transformers=[
-        # Aplica o pipeline numérico às colunas numéricas
         ("num", pipeline_numerico, colunas_numericas),
-        # Aplica o pipeline categórico às colunas categóricas
         ("cat", pipeline_categorico, colunas_categoricas)
     ])
 
-    # ESCOLHE OS MODELOS
+    # ===============================
+    # IMPORTA MODELOS
+    # ===============================
+
+    from sklearn.model_selection import cross_val_score
+
+    # Classificação
+    from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.svm import SVC
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.naive_bayes import GaussianNB
+    from sklearn.tree import DecisionTreeClassifier
+
+    # Regressão
+    from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
+    from sklearn.linear_model import LinearRegression, Ridge, Lasso
+    from sklearn.svm import SVR
+    from sklearn.neighbors import KNeighborsRegressor
+    from sklearn.tree import DecisionTreeRegressor
+
+    # ===============================
+    # ESCOLHE OS MODELOS PELO TIPO
+    # ===============================
 
     if tipo == "classificacao":
         modelos = {
@@ -154,7 +134,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
             "GradientBoosting": GradientBoostingClassifier(),
             "LogisticRegression": LogisticRegression(max_iter=3000),
             "SVM": SVC(),
-            "KNN": KNeighborsClassifier(n_neighbors=3),
+            "KNN": KNeighborsClassifier(),
             "NaiveBayes": GaussianNB(),
             "DecisionTree": DecisionTreeClassifier()
         }
@@ -167,85 +147,75 @@ def treinar_automl(caminho_csv, pasta_projeto):
             "Ridge": Ridge(),
             "Lasso": Lasso(),
             "SVR": SVR(),
-            "KNN": KNeighborsRegressor(n_neighbors=3),
+            "KNN": KNeighborsRegressor(),
             "DecisionTree": DecisionTreeRegressor()
         }
 
-    # TESTA TODOS OS MODELOS
+    # ===============================
+    # TREINA E TESTA TODOS
+    # ===============================
 
-    # Lista para armazenar o ranking dos modelos e seus scores
-    ranking = []
-    # Variável para armazenar o melhor score encontrado
-    melhor_score = -999999
-    # Variável para armazenar o pipeline do melhor modelo
-    melhor_modelo = None
-    # Nome do melhor modelo
-    melhor_nome = ""
+    ranking = []                 # Guarda (nome, score)
+    melhor_score = -999999       # Guarda o melhor score encontrado
+    melhor_modelo = None         # Guarda o pipeline completo do melhor modelo
+    melhor_nome = ""             # Nome do melhor modelo
+
+    dataset_pequeno = len(X) < 30
 
     for nome, modelo in modelos.items():
         try:
-            # Cria o pipeline completo: tratamento + modelo
+            # Cria pipeline completo: preprocessamento + modelo
             pipeline_completo = Pipeline(steps=[
-                # Primeiro passo do pipeline:
-                # Aplica todo o tratamento de dados definido no pre_processador
                 ("preprocessamento", pre_processador),
-                # Segundo passo do pipeline:
-                # Aplica o modelo de machine learning (RandomForest, SVM, etc)
                 ("modelo", modelo)
             ])
 
+            # Se dataset pequeno, treina e testa no próprio
             if dataset_pequeno:
-                # Treina e testa no próprio dataset (modo simples)
                 pipeline_completo.fit(X, y)
-                media_score = pipeline_completo.score(X, y)
+                score = pipeline_completo.score(X, y)
             else:
                 scores = cross_val_score(pipeline_completo, X, y, cv=5)
-                media_score = scores.mean()
+                score = scores.mean()
 
+            # Salva no ranking
+            ranking.append((nome, float(score)))
 
-            # Adiciona o modelo e sua média ao ranking
-            ranking.append((nome, media_score))
-
-            # Atualiza o melhor modelo se o score atual for maior que o melhor score encontrado até agora
-            if media_score > melhor_score:
-                # Se for melhor, atualiza a variável que guarda o melhor score
-                melhor_score = media_score
-                # Guarda o pipeline completo (pré-processamento + modelo) como o melhor até agora
+            # Atualiza o melhor
+            if score > melhor_score:
+                melhor_score = score
                 melhor_modelo = pipeline_completo
-                # Guarda o nome do modelo que obteve esse melhor resultado
                 melhor_nome = nome
 
         except Exception as e:
             print(f"❌ Erro no modelo {nome}: {e}")
 
-
-        # Remove modelos que deram NaN ou erro
-        ranking = [(n, s) for n, s in ranking if s == s]
-
-    # CRIA A PASTA DO PROJETO
+    # ===============================
+    # CRIA A PASTA DA VERSÃO
+    # ===============================
 
     os.makedirs(pasta_projeto, exist_ok=True)
 
-    # TREINA O MELHOR MODELO FINAL
-    if melhor_modelo is None:
-        raise Exception("❌ Nenhum modelo conseguiu treinar com esse dataset. Verifique o CSV.")
-
-    # Salva o modelo em arquivo
-    caminho_modelo = os.path.join(pasta_projeto, "modelo.pkl")
-    # Salva o melhor modelo treinado dentro desse arquivo usando o joblib
-    # Isso permite que o modelo seja carregado depois sem precisar treinar novamente
-    joblib.dump(melhor_modelo, caminho_modelo)
-        # ===============================
-    # SALVA METADADOS DA VERSÃO
     # ===============================
-    import json
-    from datetime import datetime
+    # SALVA O MELHOR MODELO
+    # ===============================
+
+    caminho_modelo = os.path.join(pasta_projeto, "modelo.pkl")
+    joblib.dump(melhor_modelo, caminho_modelo)
+
+    # ===============================
+    # SALVA META.JSON (PARA COMPARAR VERSÕES)
+    # ===============================
 
     meta = {
         "versao": os.path.basename(pasta_projeto),
-        "modelo": melhor_nome,
+        "tipo_problema": tipo,
+        "melhor_modelo": melhor_nome,
         "score": float(melhor_score),
         "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "dataset_shape": df.shape,
+        "colunas": list(df.columns),
+        "ranking": ranking,
         "producao": False
     }
 
@@ -254,43 +224,40 @@ def treinar_automl(caminho_csv, pasta_projeto):
     with open(caminho_meta, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=4, ensure_ascii=False)
 
-    # GERA O GRÁFICO
+    # ===============================
+    # GERA GRÁFICO DO RANKING
+    # ===============================
 
-    # Extrai os nomes dos modelos e suas respectivas médias de score
     nomes = [x[0] for x in ranking]
     scores = [x[1] for x in ranking]
 
-    # Cria uma figura para o gráfico de barras horizontal
     plt.figure(figsize=(10, 6))
-    plt.barh(nomes, scores)  # Plota os modelos e seus scores
-    plt.title("Ranking dos Modelos")  # Adiciona título ao gráfico
-    plt.tight_layout()  # Ajusta o layout para evitar cortes
+    plt.barh(nomes, scores)
+    plt.title("Ranking dos Modelos")
+    plt.tight_layout()
 
-    # Define o caminho para salvar o gráfico
     caminho_grafico = os.path.join(pasta_projeto, "ranking.png")
-    plt.savefig(caminho_grafico)  # Salva o gráfico no caminho especificado
-    plt.close()  # Fecha a figura para liberar memória
+    plt.savefig(caminho_grafico)
+    plt.close()
 
-    # GERA RELATÓRIO EM TXT
+    # ===============================
+    # GERA RELATÓRIO TXT
+    # ===============================
 
-    # Caminho do relatório
     caminho_relatorio = os.path.join(pasta_projeto, "resultado.txt")
 
-    # Cria e escreve no arquivo de relatório
     with open(caminho_relatorio, "w", encoding="utf-8") as f:
-        # Escreve o tipo de problema
         f.write(f"Tipo de problema: {tipo}\n\n")
 
-        # Escreve o ranking dos modelos
         for nome, score in ranking:
             f.write(f"{nome}: {score}\n")
 
-        # Escreve o melhor modelo e seu score
         f.write(f"\nMelhor modelo: {melhor_nome}\n")
         f.write(f"Score: {melhor_score}\n")
 
-
-# GERA PDF
+    # ===============================
+    # GERA PDF
+    # ===============================
 
     from pdf_report import gerar_pdf
 
@@ -301,6 +268,9 @@ def treinar_automl(caminho_csv, pasta_projeto):
         texto=open(caminho_relatorio, encoding="utf-8").read(),
         imagem=caminho_grafico
     )
-        # RETORNA OS RESULTADOS
-    return tipo, melhor_nome, melhor_score, caminho_relatorio, caminho_grafico
 
+    # ===============================
+    # RETORNA PARA O FLASK
+    # ===============================
+
+    return tipo, melhor_nome, melhor_score, caminho_relatorio, caminho_grafico
