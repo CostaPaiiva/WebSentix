@@ -1,7 +1,9 @@
 import os
 from version_manager import listar_versoes, marcar_como_producao, versao_em_producao
 import sys
+from version_manager import marcar_como_producao
 import json
+from version_manager import versao_em_producao
 from flask import Flask, render_template, request, send_file, redirect, url_for
 
 # =========================================================
@@ -105,6 +107,16 @@ def index():
 
     # Se for GET, apenas mostra a página inicial
     return render_template("index.html", projetos=projetos)
+
+@app.route("/marcar_producao/<projeto>/<versao>")
+def marcar_producao(projeto, versao):
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+
+    marcar_como_producao(pasta_projeto, versao)
+
+    # Volta para o dashboard da mesma versão
+    return redirect(url_for("dashboard", projeto=projeto))
+
 @app.route("/historico/<projeto>")
 def historico(projeto):
     pasta_projeto = os.path.join("projetos", projeto)
@@ -235,6 +247,10 @@ def dashboard(projeto):
     resultados_ordenados = dict(
         sorted(resultados_dict.items(), key=lambda x: x[1], reverse=True)
     )
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    versao_producao = versao_em_producao(pasta_projeto)
+
+    em_producao = (ultima_versao == versao_producao)
 
     # =====================================================
     # RENDERIZA O DASHBOARD
@@ -246,6 +262,9 @@ def dashboard(projeto):
         # Info do projeto
         projeto=projeto,
         versao=ultima_versao,
+
+        versao_producao=versao_producao,
+        em_producao=em_producao,
 
         # Texto completo do relatório
         texto=texto,

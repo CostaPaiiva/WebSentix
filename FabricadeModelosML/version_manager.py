@@ -53,3 +53,31 @@ def versao_em_producao(pasta_projeto):
         return None
 
     return open(caminho, encoding="utf-8").read().strip()
+
+import os
+
+# Retorna a lista de versões do projeto
+def listar_versoes(pasta_projeto):
+    pasta_treinos = os.path.join(pasta_projeto, "treinos")
+    if not os.path.exists(pasta_treinos):
+        return []
+
+    versoes = sorted(os.listdir(pasta_treinos))
+    return versoes
+
+# Marca uma versão como produção
+def marcar_como_producao(pasta_projeto, versao):
+    caminho = os.path.join(pasta_projeto, "producao.txt")
+
+    with open(caminho, "w", encoding="utf-8") as f:
+        f.write(versao)
+
+# Retorna qual versão está em produção
+def versao_em_producao(pasta_projeto):
+    caminho = os.path.join(pasta_projeto, "producao.txt")
+
+    if not os.path.exists(caminho):
+        return None
+
+    with open(caminho, "r", encoding="utf-8") as f:
+        return f.read().strip()

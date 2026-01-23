@@ -118,6 +118,16 @@
     <!-- ================= ÁREA DE BOTÕES ================= -->
     <div class="dashboard-actions">
 
+        {% if not em_producao %}
+        <a href="/marcar_producao/{{ projeto }}/{{ versao }}" class="btn-primary big-btn">
+            🚀 Marcar esta versão como produção
+        </a>
+        {% else %}
+        <div class="badge-producao">
+            🟢 ESTA VERSÃO ESTÁ EM PRODUÇÃO
+        </div>
+        {% endif %}
+
         <!-- Botão para baixar o PDF do relatório -->
         <a href="/baixar_pdf/{{ projeto }}" class="btn-primary big-btn">
             📥 Baixar Relatório em PDF

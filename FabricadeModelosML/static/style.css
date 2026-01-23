@@ -522,3 +522,13 @@ body {
 .report-box::-webkit-scrollbar-track {
     background: rgba(0,0,0,0.3);
 }
+
+.badge-producao {
+    background: #1abc9c;
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 18px;
+}
