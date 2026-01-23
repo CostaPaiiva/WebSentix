@@ -438,3 +438,87 @@ body {
 .report-box::-webkit-scrollbar-track {
     background: rgba(0,0,0,0.3);
 }
+
+/* ===========================
+   RELATÓRIO EM CARDS (ESTRUTURADO)
+   =========================== */
+
+/* Caixa geral do relatório */
+.report-box {
+    margin-top: 20px;                 /* Espaço acima da caixa */
+    max-height: 420px;                /* Altura máxima */
+    overflow-y: auto;                 /* Scroll automático se passar do limite */
+    background: rgba(5,0,10,0.6);     /* Fundo escuro translúcido */
+    border-radius: 16px;              /* Bordas arredondadas */
+    padding: 25px;                    /* Espaço interno */
+    border: 1px solid rgba(168,85,247,0.35); /* Borda roxa suave */
+    box-shadow:                       /* Sombra para dar profundidade */
+        inset 0 0 20px rgba(168,85,247,0.1),
+        0 0 30px rgba(168,85,247,0.15);
+}
+
+/* Cada linha/bloco do relatório */
+.report-item {
+    display: flex;                    /* Coloca label e valor lado a lado */
+    justify-content: space-between;   /* Um vai pra esquerda, outro pra direita */
+    align-items: center;              /* Centraliza verticalmente */
+    padding: 14px 18px;               /* Espaçamento interno */
+    margin-bottom: 12px;              /* Espaço entre os blocos */
+    border-radius: 12px;              /* Cantos arredondados */
+    background: rgba(20,0,40,0.6);    /* Fundo levemente diferente */
+    border: 1px solid rgba(168,85,247,0.25); /* Borda sutil */
+    font-size: 18px;                  /* Tamanho da fonte */
+}
+
+/* Texto da esquerda (label) */
+.report-label {
+    color: #c4b5fd;                   /* Roxo claro */
+    font-weight: 600;                 /* Semi-negrito */
+}
+
+/* Texto da direita (valor) */
+.report-value {
+    color: #e5e7eb;                   /* Quase branco */
+    font-weight: bold;                /* Negrito */
+}
+
+/* Bloco de destaque (melhor modelo) */
+.report-item.highlight {
+    background: linear-gradient(135deg, #7c3aed, #6366f1, #22d3ee); /* Gradiente */
+    color: black;                     /* Texto escuro */
+    border: none;                     /* Remove borda */
+}
+
+/* Corrige as cores internas quando é highlight */
+.report-item.highlight .report-label,
+.report-item.highlight .report-value {
+    color: #000;                      /* Texto preto */
+}
+
+/* Versão menor para a lista de modelos */
+.report-item.small {
+    font-size: 16px;                  /* Fonte um pouco menor */
+    padding: 10px 16px;               /* Menos espaçamento */
+}
+
+/* Subtítulo "Resultados completos" */
+.report-subtitle {
+    margin: 25px 0 15px 0;            /* Espaçamento em volta */
+    font-size: 20px;                  /* Tamanho do texto */
+    color: #a855f7;                   /* Roxo bonito */
+    text-align: left;                 /* Alinha à esquerda */
+}
+
+/* Scroll bonito */
+.report-box::-webkit-scrollbar {
+    width: 10px;
+}
+
+.report-box::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #7c3aed, #22d3ee);
+    border-radius: 10px;
+}
+
+.report-box::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
