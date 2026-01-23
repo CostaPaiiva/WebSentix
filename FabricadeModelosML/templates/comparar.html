@@ -77,3 +77,36 @@ new Chart(ctx, {
 
 </body>
 </html>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>📊 Comparação de Versões</title>
+</head>
+<body>
+
+<h1>📊 Comparação de versões - {{ projeto }}</h1>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Versão</th>
+        <th>Tipo</th>
+        <th>Melhor Modelo</th>
+        <th>Score</th>
+        <th>Data</th>
+    </tr>
+
+    {% for v in historico %}
+    <tr>
+        <td>{{ v.versao }}</td>
+        <td>{{ v.tipo_problema }}</td>
+        <td>{{ v.melhor_modelo }}</td>
+        <td>{{ v.melhor_score }}</td>
+        <td>{{ v.data }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

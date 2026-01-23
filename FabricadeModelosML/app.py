@@ -104,6 +104,25 @@ def index():
 
     # Se for GET, apenas mostra a página inicial
     return render_template("index.html", projetos=projetos)
+@app.route("/comparar/<projeto>")
+def comparar(projeto):
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    historico = []
+
+    for v in sorted(os.listdir(pasta_treinos)):
+        caminho_meta = os.path.join(pasta_treinos, v, "meta.json")
+
+        if os.path.exists(caminho_meta):
+            with open(caminho_meta, encoding="utf-8") as f:
+                meta = json.load(f)
+                historico.append(meta)
+
+    return render_template(
+        "comparar.html",
+        projeto=projeto,
+        historico=historico
+    )
 
 # =========================================================
 # DASHBOARD DO PROJETO
