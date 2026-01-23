@@ -5,75 +5,57 @@ def treinar_automl(caminho_csv, pasta_projeto):
     - Descobre se é classificação ou regressão
     - Treina vários modelos automaticamente
     - Escolhe o melhor
-    - Salva modelo, gráfico, relatório e meta.json
+    - Salva modelo, gráfico, relatório, dataset e meta.json
     """
 
     # ===============================
     # IMPORTA BIBLIOTECAS NECESSÁRIAS
     # ===============================
 
-    import pandas as pd               # Para ler e manipular dados
-    import os                         # Para criar pastas e caminhos
-    import joblib                     # Para salvar o modelo treinado
-    import json                       # Para salvar o meta.json
-    from datetime import datetime     # Para salvar data e hora
-    import matplotlib.pyplot as plt   # Para gerar gráfico
+    import pandas as pd
+    import os
+    import joblib
+    import json
+    from datetime import datetime
+    import matplotlib.pyplot as plt
+    import shutil
 
     # ===============================
     # LÊ O CSV
     # ===============================
 
-    df = pd.read_csv(caminho_csv)     # Lê o arquivo CSV para um DataFrame
-
-    # Remove colunas 100% vazias
+    df = pd.read_csv(caminho_csv)
     df = df.dropna(axis=1, how="all")
 
     print("📊 Dataset shape:", df.shape)
     print("📋 Colunas:", df.columns.tolist())
 
     # ===============================
-    # SEPARA X (entradas) e y (alvo)
+    # SEPARA X e y
     # ===============================
 
-    X = df.iloc[:, :-1]   # Todas as colunas menos a última
-    y = df.iloc[:, -1]    # Última coluna (alvo)
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
 
-    # Remove linhas onde o alvo está vazio
     mask = y.notna()
     X = X[mask]
     y = y[mask]
 
-    print("🎯 Alvo valores únicos:", y.nunique())
-    print("🔎 Tipo do alvo:", y.dtype)
-
     # ===============================
-    # DETECTA AUTOMATICAMENTE O TIPO
+    # DETECTA TIPO
     # ===============================
 
-    # Se o alvo é texto → com certeza é classificação
     if y.dtype == "object":
         tipo = "classificacao"
-        y = y.astype("category").cat.codes  # Converte classes para números
-
-    # Se for número:
+        y = y.astype("category").cat.codes
     else:
-        # Se tem poucos valores únicos → provavelmente classificação
         if y.nunique() <= 15:
             tipo = "classificacao"
         else:
             tipo = "regressao"
 
-    print("🤖 Tipo de problema detectado:", tipo)
-
     # ===============================
-    # DETECTA COLUNAS NUMÉRICAS E TEXTO
-    # ===============================
-
-    colunas_numericas = X.select_dtypes(include=["int64", "float64"]).columns
-    colunas_categoricas = X.select_dtypes(include=["object", "bool"]).columns
-
-    # ===============================
-    # CRIA PIPELINES DE PRÉ-PROCESSAMENTO
+    # PIPELINES
     # ===============================
 
     from sklearn.pipeline import Pipeline
@@ -81,34 +63,31 @@ def treinar_automl(caminho_csv, pasta_projeto):
     from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
     from sklearn.impute import SimpleImputer
 
-    # Pipeline para números
+    colunas_numericas = X.select_dtypes(include=["int64", "float64"]).columns
+    colunas_categoricas = X.select_dtypes(include=["object", "bool"]).columns
+
     pipeline_numerico = Pipeline(steps=[
-        ("preencher", SimpleImputer(strategy="median")),      # Preenche vazios com mediana
-        ("escalar", StandardScaler()),                         # Normaliza os números
-        ("polinomio", PolynomialFeatures(                      # Cria novas features
-            degree=2, include_bias=False, interaction_only=True
-        ))
+        ("preencher", SimpleImputer(strategy="median")),
+        ("escalar", StandardScaler()),
+        ("polinomio", PolynomialFeatures(degree=2, include_bias=False, interaction_only=True))
     ])
 
-    # Pipeline para texto
     pipeline_categorico = Pipeline(steps=[
-        ("preencher", SimpleImputer(strategy="most_frequent")),  # Preenche vazios
-        ("onehot", OneHotEncoder(handle_unknown="ignore"))       # Converte texto em números
+        ("preencher", SimpleImputer(strategy="most_frequent")),
+        ("onehot", OneHotEncoder(handle_unknown="ignore"))
     ])
 
-    # Junta tudo em um só pré-processador
     pre_processador = ColumnTransformer(transformers=[
         ("num", pipeline_numerico, colunas_numericas),
         ("cat", pipeline_categorico, colunas_categoricas)
     ])
 
     # ===============================
-    # IMPORTA MODELOS
+    # MODELOS
     # ===============================
 
     from sklearn.model_selection import cross_val_score
 
-    # Classificação
     from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier
     from sklearn.linear_model import LogisticRegression
     from sklearn.svm import SVC
@@ -116,16 +95,11 @@ def treinar_automl(caminho_csv, pasta_projeto):
     from sklearn.naive_bayes import GaussianNB
     from sklearn.tree import DecisionTreeClassifier
 
-    # Regressão
     from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, ExtraTreesRegressor
     from sklearn.linear_model import LinearRegression, Ridge, Lasso
     from sklearn.svm import SVR
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.tree import DecisionTreeRegressor
-
-    # ===============================
-    # ESCOLHE OS MODELOS PELO TIPO
-    # ===============================
 
     if tipo == "classificacao":
         modelos = {
@@ -152,25 +126,25 @@ def treinar_automl(caminho_csv, pasta_projeto):
         }
 
     # ===============================
-    # TREINA E TESTA TODOS
+    # TREINAMENTO
     # ===============================
 
-    ranking = []                 # Guarda (nome, score)
-    melhor_score = -999999       # Guarda o melhor score encontrado
-    melhor_modelo = None         # Guarda o pipeline completo do melhor modelo
-    melhor_nome = ""             # Nome do melhor modelo
+    ranking = []
+    resultados_dict = {}
+
+    melhor_score = -999999
+    melhor_modelo = None
+    melhor_nome = ""
 
     dataset_pequeno = len(X) < 30
 
     for nome, modelo in modelos.items():
         try:
-            # Cria pipeline completo: preprocessamento + modelo
             pipeline_completo = Pipeline(steps=[
                 ("preprocessamento", pre_processador),
                 ("modelo", modelo)
             ])
 
-            # Se dataset pequeno, treina e testa no próprio
             if dataset_pequeno:
                 pipeline_completo.fit(X, y)
                 score = pipeline_completo.score(X, y)
@@ -178,10 +152,11 @@ def treinar_automl(caminho_csv, pasta_projeto):
                 scores = cross_val_score(pipeline_completo, X, y, cv=5)
                 score = scores.mean()
 
-            # Salva no ranking
-            ranking.append((nome, float(score)))
+            score = float(score)
 
-            # Atualiza o melhor
+            ranking.append((nome, score))
+            resultados_dict[nome] = score
+
             if score > melhor_score:
                 melhor_score = score
                 melhor_modelo = pipeline_completo
@@ -191,32 +166,38 @@ def treinar_automl(caminho_csv, pasta_projeto):
             print(f"❌ Erro no modelo {nome}: {e}")
 
     # ===============================
-    # CRIA A PASTA DA VERSÃO
+    # GARANTE PASTA
     # ===============================
 
     os.makedirs(pasta_projeto, exist_ok=True)
 
     # ===============================
-    # SALVA O MELHOR MODELO
+    # SALVA MELHOR MODELO
     # ===============================
 
-    caminho_modelo = os.path.join(pasta_projeto, "modelo.pkl")
+    caminho_modelo = os.path.join(pasta_projeto, "melhor_modelo.pkl")
     joblib.dump(melhor_modelo, caminho_modelo)
 
     # ===============================
-    # SALVA META.JSON (PARA COMPARAR VERSÕES)
+    # SALVA DATASET USADO
+    # ===============================
+
+    shutil.copy(caminho_csv, os.path.join(pasta_projeto, "dataset.csv"))
+
+    # ===============================
+    # SALVA META.JSON COMPLETO
     # ===============================
 
     meta = {
         "versao": os.path.basename(pasta_projeto),
+        "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "tipo_problema": tipo,
         "melhor_modelo": melhor_nome,
-        "score": float(melhor_score),
-        "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "dataset_shape": df.shape,
+        "melhor_score": float(melhor_score),
+        "metricas": resultados_dict,
+        "dataset_shape": list(df.shape),
         "colunas": list(df.columns),
-        "ranking": ranking,
-        "producao": False
+        "arquivo_dataset": "dataset.csv"
     }
 
     caminho_meta = os.path.join(pasta_projeto, "meta.json")
@@ -225,14 +206,17 @@ def treinar_automl(caminho_csv, pasta_projeto):
         json.dump(meta, f, indent=4, ensure_ascii=False)
 
     # ===============================
-    # GERA GRÁFICO DO RANKING
+    # GRÁFICO
     # ===============================
 
-    nomes = [x[0] for x in ranking]
-    scores = [x[1] for x in ranking]
+    ranking_ordenado = sorted(ranking, key=lambda x: x[1], reverse=True)
+
+    nomes = [x[0] for x in ranking_ordenado]
+    scores = [x[1] for x in ranking_ordenado]
 
     plt.figure(figsize=(10, 6))
     plt.barh(nomes, scores)
+    plt.gca().invert_yaxis()
     plt.title("Ranking dos Modelos")
     plt.tight_layout()
 
@@ -241,22 +225,20 @@ def treinar_automl(caminho_csv, pasta_projeto):
     plt.close()
 
     # ===============================
-    # GERA RELATÓRIO TXT
+    # RELATÓRIO TXT
     # ===============================
 
     caminho_relatorio = os.path.join(pasta_projeto, "resultado.txt")
 
     with open(caminho_relatorio, "w", encoding="utf-8") as f:
         f.write(f"Tipo de problema: {tipo}\n\n")
-
-        for nome, score in ranking:
+        for nome, score in ranking_ordenado:
             f.write(f"{nome}: {score}\n")
-
         f.write(f"\nMelhor modelo: {melhor_nome}\n")
         f.write(f"Score: {melhor_score}\n")
 
     # ===============================
-    # GERA PDF
+    # PDF
     # ===============================
 
     from pdf_report import gerar_pdf
@@ -270,7 +252,7 @@ def treinar_automl(caminho_csv, pasta_projeto):
     )
 
     # ===============================
-    # RETORNA PARA O FLASK
+    # RETORNO
     # ===============================
 
     return tipo, melhor_nome, melhor_score, caminho_relatorio, caminho_grafico

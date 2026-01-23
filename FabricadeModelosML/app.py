@@ -145,11 +145,8 @@ def comparar(projeto):
                 meta = json.load(f)
                 historico.append(meta)
 
-    return render_template(
-        "comparar.html",
-        projeto=projeto,
-        historico=historico
-    )
+    return render_template("comparar_versoes.html", projeto=projeto, historico=historico)
+
 
 # =========================================================
 # DASHBOARD DO PROJETO
