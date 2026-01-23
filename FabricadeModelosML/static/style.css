@@ -382,3 +382,59 @@ body {
         transform: scale(1);
     }
 }
+
+/* ===========================
+   CARD RELATÓRIO - VISUAL PREMIUM
+   =========================== */
+
+.dashboard-card h2 {
+    font-size: 26px;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #a855f7, #6366f1, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.report-box {
+    margin-top: 20px;
+    max-height: 420px;
+    overflow-y: auto;
+
+    background: rgba(5,0,10,0.6);
+    border-radius: 14px;
+    padding: 25px;
+
+    border: 1px solid rgba(168, 85, 247, 0.35);
+
+    box-shadow:
+        inset 0 0 20px rgba(168,85,247,0.1),
+        0 0 30px rgba(168,85,247,0.15);
+}
+
+/* Texto do relatório */
+.report-box pre {
+    white-space: pre-wrap;
+    color: #e5e7eb;
+    font-size: 18px;
+    line-height: 1.65;
+}
+
+/* Destaque de números e modelos */
+.report-box pre b,
+.report-box pre strong {
+    color: #22d3ee;
+}
+
+/* Scroll bonito */
+.report-box::-webkit-scrollbar {
+    width: 10px;
+}
+
+.report-box::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #7c3aed, #22d3ee);
+    border-radius: 10px;
+}
+
+.report-box::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
