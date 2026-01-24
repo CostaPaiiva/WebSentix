@@ -11,6 +11,38 @@
 
     <h1 class="title">🔎 {{ projeto }} - {{ versao }}</h1>
 
+    <!-- AÇÕES -->
+    <div class="card destaque" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+        
+        <!-- RESTAURAR -->
+        {% if producao == versao %}
+            <span class="btn" style="opacity:0.5; cursor:not-allowed;">
+                ✅ Esta versão já está em produção
+            </span>
+        {% else %}
+            <a 
+                class="btn btn-success"
+                href="/restaurar/{{ projeto }}/{{ versao }}"
+                onclick="return confirm('Tem certeza que deseja restaurar {{ versao }} como versão de produção?')"
+            >
+                🚀 Restaurar esta versão
+            </a>
+        {% endif %}
+
+
+        <!-- COMPARAR COM PRODUÇÃO -->
+        {% if producao %}
+        <a 
+            class="btn"
+            href="/comparar/{{ projeto }}/{{ producao }}/{{ versao }}"
+        >
+            ⚖️ Comparar com Produção ({{ producao }})
+        </a>
+        {% else %}
+        <span style="opacity:0.7;">⚠️ Nenhuma versão em produção</span>
+        {% endif %}
+    </div>
+
     <!-- RESUMO -->
     <div class="card destaque">
         <h2>🏆 Melhor Modelo</h2>

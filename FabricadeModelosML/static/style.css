@@ -714,3 +714,14 @@ body {
     border: 2px solid #ffd700;
     box-shadow: 0 0 20px rgba(255,215,0,0.2);
 }
+
+.badge-prod {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    color: #0b2e13;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(0, 255, 120, 0.6);
+}

@@ -247,18 +247,29 @@ def ver_detalhes(projeto, versao):
 @app.route("/restaurar/<projeto>/<versao>")
 def restaurar_versao(projeto, versao):
     import os
+    from flask import redirect
 
     pasta_base = os.path.join(PROJECTS_FOLDER, projeto)
 
     if not os.path.exists(pasta_base):
         return "Projeto não encontrado", 404
 
-    # Marca como produção
     caminho_prod = os.path.join(pasta_base, "PRODUCAO.txt")
+
+    # Se já for produção, não faz nada
+    if os.path.exists(caminho_prod):
+        with open(caminho_prod, "r", encoding="utf-8") as f:
+            atual = f.read().strip()
+
+        if atual == versao:
+            print("⚠️ Esta versão já está em produção.")
+            return redirect(f"/ver_detalhes/{projeto}/{versao}")
+
+    # Grava nova produção
     with open(caminho_prod, "w", encoding="utf-8") as f:
         f.write(versao)
 
-    print(f"♻️ Versão {versao} restaurada como produção em {projeto}")
+    print(f"🚀 Versão {versao} restaurada como produção em {projeto}")
 
     return redirect(f"/timeline/{projeto}")
 
@@ -289,7 +300,16 @@ def salvar_comentario(projeto, versao):
 
     # Volta pra timeline
     return redirect(url_for("timeline", projeto=projeto))
-    
+
+@app.route("/comparar/<projeto>/<v1>/<v2>")
+def comparar_versoes(projeto, v1, v2):
+    return render_template(
+        "comparar_versoes.html",
+        projeto=projeto,
+        v1=v1,
+        v2=v2
+    )
+
 @app.route("/comparar_duas/<projeto>", methods=["GET", "POST"])
 def comparar_duas(projeto):
     import os, json
