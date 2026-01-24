@@ -303,26 +303,62 @@ def salvar_comentario(projeto, versao):
 
 @app.route("/comparar/<projeto>/<v1>/<v2>")
 def comparar_versoes(projeto, v1, v2):
+    import os, json
+
+    pasta_base = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    p1 = os.path.join(pasta_base, v1, "meta.json")
+    p2 = os.path.join(pasta_base, v2, "meta.json")
+
+    if not os.path.exists(p1) or not os.path.exists(p2):
+        return "Uma das versões não existe", 404
+
+    with open(p1, encoding="utf-8") as f:
+        m1 = json.load(f)
+
+    with open(p2, encoding="utf-8") as f:
+        m2 = json.load(f)
+
+    # Descobre produção
+    producao = None
+    caminho_prod = os.path.join(PROJECTS_FOLDER, projeto, "PRODUCAO.txt")
+    if os.path.exists(caminho_prod):
+        with open(caminho_prod, encoding="utf-8") as f:
+            producao = f.read().strip()
+
+    # Diferença de score
+    try:
+        diff = float(m2["melhor_score"]) - float(m1["melhor_score"])
+    except:
+        diff = None
+
     return render_template(
         "comparar_versoes.html",
         projeto=projeto,
         v1=v1,
-        v2=v2
+        v2=v2,
+        m1=m1,
+        m2=m2,
+        producao=producao,
+        diff=diff
     )
 
-@app.route("/comparar_duas/<projeto>", methods=["GET", "POST"])
+
+@app.route("/comparar_duas/<projeto>", methods=["GET"])
 def comparar_duas(projeto):
     import os, json
 
-    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
 
-    # Lista versões disponíveis
-    versoes = [
-        v for v in os.listdir(pasta_projeto)
-        if os.path.isdir(os.path.join(pasta_projeto, v))
-    ]
+    # Lista só versões que TEM meta.json
+    versoes = []
+    for v in os.listdir(pasta_projeto):
+        caminho_meta = os.path.join(pasta_projeto, v, "meta.json")
+        if os.path.isdir(os.path.join(pasta_projeto, v)) and os.path.exists(caminho_meta):
+            versoes.append(v)
 
-    # Recebe versões da querystring (?versoes=v1&versoes=v2)
+    versoes = sorted(versoes)
+
     selecionadas = request.args.getlist("versoes")
 
     meta1 = None
@@ -330,16 +366,23 @@ def comparar_duas(projeto):
     v1 = None
     v2 = None
 
+    def carregar_meta(v):
+        caminho = os.path.join(pasta_projeto, v, "meta.json")
+        with open(caminho, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+            return meta
+
     if len(selecionadas) == 2:
         v1, v2 = selecionadas
 
-        def carregar_meta(v):
-            caminho = os.path.join(pasta_projeto, v, "meta.json")
-            with open(caminho, "r", encoding="utf-8") as f:
-                return json.load(f)
+        try:
+            meta1 = carregar_meta(v1)
+            meta2 = carregar_meta(v2)
+        except Exception as e:
+            print("❌ Erro ao carregar meta:", e)
 
-        meta1 = carregar_meta(v1)
-        meta2 = carregar_meta(v2)
+    print("DEBUG versões válidas:", versoes)
+    print("DEBUG selecionadas:", selecionadas)
 
     return render_template(
         "comparar_duas.html",
@@ -350,6 +393,7 @@ def comparar_duas(projeto):
         meta1=meta1,
         meta2=meta2
     )
+
 
 
 

@@ -18,6 +18,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
     from datetime import datetime
     import matplotlib.pyplot as plt
     import shutil
+    import matplotlib
+    matplotlib.use("Agg")  # backend sem interface gráfica (corrige crash no Flask)
 
     # ===============================
     # LÊ CSV
