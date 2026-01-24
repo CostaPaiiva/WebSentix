@@ -32,19 +32,32 @@
         <button class="btn-secondary" type="submit">Comparar</button>
     </form>
 
+    {% if vencedora %}
+    <!-- Card da vencedora -->
+    <div class="card destaque" style="text-align:center; margin-bottom:30px;">
+        <h2>🏆 Vencedora: {{ vencedora }}</h2>
+
+        {% if vencedora == producao %}
+            <p>✅ Esta versão já está em produção.</p>
+        {% else %}
+            <a class="btn" href="/promover_producao/{{ projeto }}/{{ vencedora }}">
+                🚀 Promover para Produção
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
 
     {% if meta1 and meta2 %}
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
 
         <!-- Versão A -->
-        <div class="card">
+        <div class="card {% if v1 == vencedora %}destaque{% endif %}">
             <h2>🏷️ {{ v1 }}</h2>
             <p><b>Tipo:</b> {{ meta1.tipo_problema }}</p>
             <p><b>Modelo:</b> {{ meta1.melhor_modelo }}</p>
             <p><b>Score:</b> {{ "%.4f"|format(meta1.melhor_score) }}</p>
             <p><b>Data:</b> {{ meta1.data }}</p>
-            <p><b>Em produção:</b> {{ "Sim" if meta1.producao else "Não" }}</p>
 
             <hr>
 
@@ -62,13 +75,12 @@
         </div>
 
         <!-- Versão B -->
-        <div class="card">
+        <div class="card {% if v2 == vencedora %}destaque{% endif %}">
             <h2>🏷️ {{ v2 }}</h2>
             <p><b>Tipo:</b> {{ meta2.tipo_problema }}</p>
             <p><b>Modelo:</b> {{ meta2.melhor_modelo }}</p>
             <p><b>Score:</b> {{ "%.4f"|format(meta2.melhor_score) }}</p>
             <p><b>Data:</b> {{ meta2.data }}</p>
-            <p><b>Em produção:</b> {{ "Sim" if meta2.producao else "Não" }}</p>
 
             <hr>
 

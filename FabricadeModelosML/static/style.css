@@ -1,4 +1,17 @@
 
+:root {
+    --cor-titulo: #2563eb;
+    --cor-subtitulo: #64748b;
+    --cor-texto: #e5e7eb;
+
+    --cor-producao: #22c55e;
+    --cor-normal: #cbd5f5;
+    --cor-alerta: #ef4444;
+
+    --cor-detalhe: #a78bfa;
+}
+
+
 * {
     box-sizing: border-box;
     font-family: "Segoe UI", Arial, sans-serif;
@@ -714,6 +727,10 @@ body {
     border: 2px solid #ffd700;
     box-shadow: 0 0 20px rgba(255,215,0,0.2);
 }
+.destaque {
+    border: 3px solid #00c853;
+    box-shadow: 0 0 15px rgba(0, 200, 83, 0.4);
+}
 
 .badge-prod {
     background: linear-gradient(135deg, #00c853, #00e676);
@@ -761,4 +778,106 @@ body {
 .btn-mini:hover {
     background: #333;
     transform: translateY(-1px);
+}
+
+/* ==========================
+   CORES DA TIMELINE
+   ========================== */
+
+.title {
+    color: var(--cor-titulo) !important;
+}
+
+.subtitle {
+    color: var(--cor-subtitulo) !important;
+}
+
+.timeline-item h3 {
+    color: var(--cor-normal);
+}
+
+.timeline-item .data {
+    color: var(--cor-detalhe);
+}
+
+.timeline-item.producao h3 {
+    color: var(--cor-producao) !important;
+}
+
+.timeline-item.producao {
+    border-left: 4px solid var(--cor-producao) !important;
+}
+
+.timeline-item p,
+.timeline-item span,
+.timeline-item small {
+    color: var(--cor-texto);
+}
+
+/* Botões */
+.btn-danger {
+    background-color: var(--cor-alerta);
+}
+
+.btn-secondary {
+    color: #fff;
+}
+
+.timeline-item h3 {
+    color: red !important;
+}
+
+/* ==========================
+   CORES FINAS DA TIMELINE
+   ========================== */
+
+/* Data */
+.timeline-item .data,
+.timeline-item .data span {
+    color: #38bdf8 !important;   /* azul claro */
+    font-weight: 600;
+}
+
+/* Texto normal */
+.timeline-item p,
+.timeline-item span,
+.timeline-item small,
+.timeline-item div {
+    color: #e5e7eb !important;   /* cinza claro */
+}
+
+/* Labels com emoji */
+.timeline-item p b {
+    color: #fbbf24 !important;   /* dourado */
+}
+
+/* Modelo */
+.timeline-item .modelo {
+    color: #22c55e !important;   /* verde */
+    font-weight: bold;
+}
+
+/* Score */
+.timeline-item .score {
+    color: #60a5fa !important;   /* azul */
+    font-weight: bold;
+}
+
+/* Métricas */
+.timeline-item .metrica {
+    color: #a78bfa !important;   /* roxo */
+}
+
+/* Versão em produção */
+.timeline-item.producao {
+    border-left: 4px solid #22c55e !important;
+}
+
+.timeline-item.producao h3 {
+    color: #22c55e !important;
+}
+
+/* Ícones emoji */
+.timeline-item {
+    color: #e5e7eb;
 }

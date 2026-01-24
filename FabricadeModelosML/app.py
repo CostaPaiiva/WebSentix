@@ -350,39 +350,41 @@ def comparar_duas(projeto):
 
     pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
 
-    # Lista só versões que TEM meta.json
+    # Lê produção atual
+    producao = None
+    caminho_prod = os.path.join(PROJECTS_FOLDER, projeto, "PRODUCAO.txt")
+    if os.path.exists(caminho_prod):
+        with open(caminho_prod, "r", encoding="utf-8") as f:
+            producao = f.read().strip()
+
+    # Lista só versões que tem meta.json
     versoes = []
     for v in os.listdir(pasta_projeto):
-        caminho_meta = os.path.join(pasta_projeto, v, "meta.json")
-        if os.path.isdir(os.path.join(pasta_projeto, v)) and os.path.exists(caminho_meta):
+        if os.path.exists(os.path.join(pasta_projeto, v, "meta.json")):
             versoes.append(v)
 
     versoes = sorted(versoes)
 
     selecionadas = request.args.getlist("versoes")
 
-    meta1 = None
-    meta2 = None
-    v1 = None
-    v2 = None
+    meta1 = meta2 = None
+    v1 = v2 = None
+    vencedora = None
 
     def carregar_meta(v):
-        caminho = os.path.join(pasta_projeto, v, "meta.json")
-        with open(caminho, "r", encoding="utf-8") as f:
-            meta = json.load(f)
-            return meta
+        with open(os.path.join(pasta_projeto, v, "meta.json"), "r", encoding="utf-8") as f:
+            return json.load(f)
 
     if len(selecionadas) == 2:
         v1, v2 = selecionadas
+        meta1 = carregar_meta(v1)
+        meta2 = carregar_meta(v2)
 
-        try:
-            meta1 = carregar_meta(v1)
-            meta2 = carregar_meta(v2)
-        except Exception as e:
-            print("❌ Erro ao carregar meta:", e)
-
-    print("DEBUG versões válidas:", versoes)
-    print("DEBUG selecionadas:", selecionadas)
+        # Decide vencedora
+        if meta1["melhor_score"] > meta2["melhor_score"]:
+            vencedora = v1
+        else:
+            vencedora = v2
 
     return render_template(
         "comparar_duas.html",
@@ -391,11 +393,27 @@ def comparar_duas(projeto):
         v1=v1,
         v2=v2,
         meta1=meta1,
-        meta2=meta2
+        meta2=meta2,
+        vencedora=vencedora,
+        producao=producao
     )
 
+@app.route("/promover_producao/<projeto>/<versao>")
+def promover_producao(projeto, versao):
+    import os
 
+    pasta_base = os.path.join(PROJECTS_FOLDER, projeto)
 
+    if not os.path.exists(pasta_base):
+        return "Projeto não encontrado", 404
+
+    caminho_prod = os.path.join(pasta_base, "PRODUCAO.txt")
+    with open(caminho_prod, "w", encoding="utf-8") as f:
+        f.write(versao)
+
+    print(f"🏆 Versão {versao} promovida para produção em {projeto}")
+
+    return redirect(f"/timeline/{projeto}")
 
 @app.route("/comparar/<projeto>")
 def comparar(projeto):

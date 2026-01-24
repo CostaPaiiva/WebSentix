@@ -8,42 +8,57 @@
 <body>
 
 <div class="container">
-    <h1>📜 Histórico de versões - {{ projeto }}</h1>
+    <h1 class="title">📜 Histórico de versões - {{ projeto }}</h1>
 
     {% if producao %}
-        <div class="badge-producao">
-            🚀 Em produção: {{ producao }}
+        <div class="badge-producao-topo">
+            🚀 Em produção: <b>{{ producao }}</b>
         </div>
     {% endif %}
 
     <div class="timeline">
 
         {% for item in historico %}
-        <div class="timeline-item {% if item.producao %}producao{% endif %}">
+        <div class="timeline-item {% if item.em_producao %}producao{% endif %}">
             <div class="timeline-dot"></div>
 
             <div class="timeline-card">
-                <h3>{{ item.versao }}</h3>
-                <p>📅 {{ item.data }}</p>
-                <p>💬 {{ item.comentario }}</p>
+
+                <h3>📦 {{ item.versao }}</h3>
+
+                <div class="data">📅 {{ item.data }}</div>
+
+                {% if item.comentario %}
+                    <p class="comentario">💬 {{ item.comentario }}</p>
+                {% endif %}
 
                 {% if item.metricas %}
                 <div class="metricas">
-                    <span>🏆 Modelo: {{ item.metricas.modelo }}</span>
-                    <span>📈 Score: {{ item.metricas.score }}</span>
-                    <span>🎯 Acc: {{ item.metricas.accuracy }}</span>
-                    <span>🧪 F1: {{ item.metricas.f1 }}</span>
+                    <p>🏆 <b>Modelo:</b> <span class="modelo">{{ item.melhor_modelo }}</span></p>
+                    <p>📈 <b>Score:</b> <span class="score">{{ "%.4f"|format(item.melhor_score) }}</span></p>
+
+                    {% if item.acc is not none %}
+                        <p>🎯 <b>Acc:</b> <span class="metrica">{{ "%.4f"|format(item.acc) }}</span></p>
+                    {% endif %}
+
+                    {% if item.f1 is not none %}
+                        <p>🧪 <b>F1:</b> <span class="metrica">{{ "%.4f"|format(item.f1) }}</span></p>
+                    {% endif %}
                 </div>
                 {% endif %}
 
                 <div class="acoes">
                     <a class="btn" href="/ver_detalhes/{{ projeto }}/{{ item.versao }}">🔍 Ver detalhes</a>
-                    <a class="btn btn-warning" href="/restaurar/{{ projeto }}/{{ item.versao }}">♻ Restaurar versão</a>
+
+                    {% if not item.em_producao %}
+                        <a class="btn btn-warning" href="/restaurar/{{ projeto }}/{{ item.versao }}">
+                            ♻ Restaurar versão
+                        </a>
+                    {% else %}
+                        <span class="tag-producao">🚀 EM PRODUÇÃO</span>
+                    {% endif %}
                 </div>
 
-                {% if item.producao %}
-                    <div class="tag-producao">🚀 PRODUÇÃO</div>
-                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -51,7 +66,7 @@
     </div>
 
     <br>
-    <a href="/dashboard/{{ projeto }}">⬅ Voltar</a>
+    <a class="btn-secondary" href="/dashboard/{{ projeto }}">⬅ Voltar</a>
 </div>
 
 </body>
