@@ -3,6 +3,7 @@ from version_manager import listar_versoes, marcar_como_producao, versao_em_prod
 import sys
 from version_manager import marcar_como_producao
 import json
+from flask import send_from_directory
 from flask import request, redirect, url_for
 from version_manager import versao_em_producao
 from flask import Flask, render_template, request, send_file, redirect, url_for
@@ -108,6 +109,16 @@ def index():
 
     # Se for GET, apenas mostra a página inicial
     return render_template("index.html", projetos=projetos)
+@app.route("/files/<projeto>/<versao>/<path:filename>")
+def arquivos_projeto(projeto, versao, filename):
+    import os
+
+    pasta = os.path.join(PROJECTS_FOLDER, projeto, "treinos", versao)
+
+    if not os.path.exists(pasta):
+        return "Pasta não encontrada", 404
+
+    return send_from_directory(pasta, filename, as_attachment=False)
 
 @app.route("/marcar_producao/<projeto>/<versao>")
 def marcar_producao(projeto, versao):
@@ -135,14 +146,27 @@ def historico(projeto):
 def timeline(projeto):
     import os, json
 
-    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_base = os.path.join(PROJECTS_FOLDER, projeto)
 
-    if not os.path.exists(pasta_projeto):
+    if not os.path.exists(pasta_base):
         return f"Projeto {projeto} não encontrado", 404
+
+    # Detecta automaticamente onde estão as versões
+    if os.path.exists(os.path.join(pasta_base, "treinos")):
+        pasta_projeto = os.path.join(pasta_base, "treinos")
+    else:
+        pasta_projeto = pasta_base
+
+    print("📂 Lendo versões em:", pasta_projeto)
+    print("📂 Conteúdo:", os.listdir(pasta_projeto))
 
     historico = []
 
     for versao in os.listdir(pasta_projeto):
+
+        if not versao.lower().startswith("v"):
+            continue
+
         pasta_versao = os.path.join(pasta_projeto, versao)
 
         if not os.path.isdir(pasta_versao):
@@ -151,27 +175,38 @@ def timeline(projeto):
         caminho_meta = os.path.join(pasta_versao, "meta.json")
 
         if not os.path.exists(caminho_meta):
+            print("⚠️ Sem meta.json em", pasta_versao)
             continue
 
         try:
             with open(caminho_meta, "r", encoding="utf-8") as f:
                 meta = json.load(f)
 
-            # Garante campo comentário
+            # Garante campos mínimos
+            meta["versao"] = versao
             if "comentario" not in meta:
                 meta["comentario"] = ""
+
+            # Tenta carregar métricas se existirem
+            metricas = {}
+            caminho_resultados = os.path.join(pasta_versao, "resultados.json")
+            if os.path.exists(caminho_resultados):
+                with open(caminho_resultados, "r", encoding="utf-8") as f:
+                    metricas = json.load(f)
+
+            meta["metricas"] = metricas
 
             historico.append(meta)
 
         except Exception as e:
-            print("❌ Erro ao ler meta.json:", caminho_meta, e)
+            print("❌ Erro ao ler", caminho_meta, e)
 
     # Ordena do mais recente para o mais antigo
     historico = sorted(historico, key=lambda x: x.get("data", ""), reverse=True)
 
     # Descobre produção
     producao = None
-    caminho_prod = os.path.join(pasta_projeto, "PRODUCAO.txt")
+    caminho_prod = os.path.join(pasta_base, "PRODUCAO.txt")
     if os.path.exists(caminho_prod):
         with open(caminho_prod, "r", encoding="utf-8") as f:
             producao = f.read().strip()
@@ -185,6 +220,47 @@ def timeline(projeto):
         producao=producao
     )
 
+@app.route("/ver_detalhes/<projeto>/<versao>")
+def ver_detalhes(projeto, versao):
+    import os, json
+
+    pasta_versao = os.path.join(PROJECTS_FOLDER, projeto, "treinos", versao)
+
+    if not os.path.exists(pasta_versao):
+        return "Versão não encontrada", 404
+
+    caminho_meta = os.path.join(pasta_versao, "meta.json")
+
+    if not os.path.exists(caminho_meta):
+        return "meta.json não encontrado", 404
+
+    with open(caminho_meta, "r", encoding="utf-8") as f:
+        meta = json.load(f)
+
+    return render_template(
+        "detalhes_versao.html",
+        projeto=projeto,
+        versao=versao,
+        meta=meta
+    )
+
+@app.route("/restaurar/<projeto>/<versao>")
+def restaurar_versao(projeto, versao):
+    import os
+
+    pasta_base = os.path.join(PROJECTS_FOLDER, projeto)
+
+    if not os.path.exists(pasta_base):
+        return "Projeto não encontrado", 404
+
+    # Marca como produção
+    caminho_prod = os.path.join(pasta_base, "PRODUCAO.txt")
+    with open(caminho_prod, "w", encoding="utf-8") as f:
+        f.write(versao)
+
+    print(f"♻️ Versão {versao} restaurada como produção em {projeto}")
+
+    return redirect(f"/timeline/{projeto}")
 
 @app.route("/salvar_comentario/<projeto>/<versao>", methods=["POST"])
 def salvar_comentario(projeto, versao):

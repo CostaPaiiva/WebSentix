@@ -1,52 +1,58 @@
-@app.route("/timeline/<projeto>")
-def timeline(projeto):
-    import os, json
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>📜 Timeline - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 
-    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+<div class="container">
+    <h1>📜 Histórico de versões - {{ projeto }}</h1>
 
-    if not os.path.exists(pasta_projeto):
-        return f"Projeto {projeto} não encontrado", 404
+    {% if producao %}
+        <div class="badge-producao">
+            🚀 Em produção: {{ producao }}
+        </div>
+    {% endif %}
 
-    historico = []
+    <div class="timeline">
 
-    for versao in os.listdir(pasta_projeto):
-        pasta_versao = os.path.join(pasta_projeto, versao)
+        {% for item in historico %}
+        <div class="timeline-item {% if item.producao %}producao{% endif %}">
+            <div class="timeline-dot"></div>
 
-        if not os.path.isdir(pasta_versao):
-            continue
+            <div class="timeline-card">
+                <h3>{{ item.versao }}</h3>
+                <p>📅 {{ item.data }}</p>
+                <p>💬 {{ item.comentario }}</p>
 
-        caminho_meta = os.path.join(pasta_versao, "meta.json")
+                {% if item.metricas %}
+                <div class="metricas">
+                    <span>🏆 Modelo: {{ item.metricas.modelo }}</span>
+                    <span>📈 Score: {{ item.metricas.score }}</span>
+                    <span>🎯 Acc: {{ item.metricas.accuracy }}</span>
+                    <span>🧪 F1: {{ item.metricas.f1 }}</span>
+                </div>
+                {% endif %}
 
-        if not os.path.exists(caminho_meta):
-            continue
+                <div class="acoes">
+                    <a class="btn" href="/ver_detalhes/{{ projeto }}/{{ item.versao }}">🔍 Ver detalhes</a>
+                    <a class="btn btn-warning" href="/restaurar/{{ projeto }}/{{ item.versao }}">♻ Restaurar versão</a>
+                </div>
 
-        try:
-            with open(caminho_meta, "r", encoding="utf-8") as f:
-                meta = json.load(f)
+                {% if item.producao %}
+                    <div class="tag-producao">🚀 PRODUÇÃO</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
 
-            # Garante que o campo comentário sempre exista
-            if "comentario" not in meta:
-                meta["comentario"] = ""
+    </div>
 
-            historico.append(meta)
+    <br>
+    <a href="/dashboard/{{ projeto }}">⬅ Voltar</a>
+</div>
 
-        except Exception as e:
-            print("❌ Erro ao ler meta.json de", versao, ":", e)
-
-    # Ordena por data (mais recente primeiro)
-    historico = sorted(historico, key=lambda x: x.get("data", ""), reverse=True)
-
-    # Descobre qual está em produção
-    producao = None
-    caminho_prod = os.path.join(pasta_projeto, "PRODUCAO.txt")
-    if os.path.exists(caminho_prod):
-        with open(caminho_prod, "r", encoding="utf-8") as f:
-            producao = f.read().strip()
-
-    # 🔥 ESSE RETURN É O QUE ESTAVA FALTANDO EM ALGUM CAMINHO
-    return render_template(
-        "timeline.html",
-        projeto=projeto,
-        historico=historico,
-        producao=producao
-    )
+</body>
+</html>

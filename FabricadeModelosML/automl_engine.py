@@ -5,13 +5,12 @@ def treinar_automl(caminho_csv, pasta_projeto):
     - Descobre se é classificação ou regressão
     - Treina vários modelos automaticamente
     - Escolhe o melhor
-    - Salva modelo, gráfico, relatório, dataset e meta.json
+    - Salva modelo, gráfico, relatórios, dataset e arquivos JSON
     """
 
     # ===============================
-    # IMPORTA BIBLIOTECAS NECESSÁRIAS
+    # IMPORTA BIBLIOTECAS
     # ===============================
-
     import pandas as pd
     import os
     import joblib
@@ -21,9 +20,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
     import shutil
 
     # ===============================
-    # LÊ O CSV
+    # LÊ CSV
     # ===============================
-
     df = pd.read_csv(caminho_csv)
     df = df.dropna(axis=1, how="all")
 
@@ -33,7 +31,6 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # SEPARA X e y
     # ===============================
-
     X = df.iloc[:, :-1]
     y = df.iloc[:, -1]
 
@@ -44,11 +41,6 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # DETECTA TIPO DE PROBLEMA
     # ===============================
-    # - Se for texto/categoria → classificação
-    # - Se for número:
-    #       - Poucos valores únicos → classificação
-    #       - Muitos valores únicos → regressão
-
     if y.dtype == "object":
         tipo = "classificacao"
         y = y.astype("category").cat.codes
@@ -64,7 +56,6 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # PIPELINES DE PRÉ-PROCESSAMENTO
     # ===============================
-
     from sklearn.pipeline import Pipeline
     from sklearn.compose import ColumnTransformer
     from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures
@@ -90,9 +81,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
     ])
 
     # ===============================
-    # MODELOS (SEPARADOS POR TIPO)
+    # MODELOS
     # ===============================
-
     from sklearn.model_selection import cross_val_score
 
     # Classificação
@@ -109,9 +99,6 @@ def treinar_automl(caminho_csv, pasta_projeto):
     from sklearn.svm import SVR
     from sklearn.neighbors import KNeighborsRegressor
     from sklearn.tree import DecisionTreeRegressor
-
-    # ⚠️ AQUI É O PONTO CRÍTICO:
-    # Só entram modelos compatíveis com o tipo do problema
 
     if tipo == "classificacao":
         modelos = {
@@ -140,7 +127,6 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # TREINAMENTO
     # ===============================
-
     ranking = []
     resultados_dict = {}
 
@@ -180,26 +166,21 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # GARANTE PASTA
     # ===============================
-
     os.makedirs(pasta_projeto, exist_ok=True)
 
     # ===============================
-    # SALVA MELHOR MODELO
+    # SALVA MODELO
     # ===============================
-
-    caminho_modelo = os.path.join(pasta_projeto, "melhor_modelo.pkl")
-    joblib.dump(melhor_modelo, caminho_modelo)
+    joblib.dump(melhor_modelo, os.path.join(pasta_projeto, "melhor_modelo.pkl"))
 
     # ===============================
-    # SALVA DATASET USADO
+    # SALVA DATASET
     # ===============================
-
     shutil.copy(caminho_csv, os.path.join(pasta_projeto, "dataset.csv"))
 
     # ===============================
-    # SALVA META.JSON
+    # META.JSON
     # ===============================
-
     meta = {
         "versao": os.path.basename(pasta_projeto),
         "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -213,34 +194,53 @@ def treinar_automl(caminho_csv, pasta_projeto):
         "comentario": ""
     }
 
-    caminho_meta = os.path.join(pasta_projeto, "meta.json")
-
-    with open(caminho_meta, "w", encoding="utf-8") as f:
+    with open(os.path.join(pasta_projeto, "meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=4, ensure_ascii=False)
+
+    # ===============================
+    # RESULTADOS.JSON
+    # ===============================
+    resultados = {
+        "melhor_modelo": melhor_nome,
+        "melhor_score": float(melhor_score),
+        "tipo_problema": tipo,
+        "metricas_por_modelo": resultados_dict
+    }
+
+    with open(os.path.join(pasta_projeto, "resultados.json"), "w", encoding="utf-8") as f:
+        json.dump(resultados, f, indent=4, ensure_ascii=False)
+
+    # ===============================
+    # RANKING
+    # ===============================
+    ranking_ordenado = sorted(ranking, key=lambda x: x[1], reverse=True)
+
+    ranking_serializavel = [
+        {"modelo": nome, "score": float(score)}
+        for nome, score in ranking_ordenado
+    ]
+
+    with open(os.path.join(pasta_projeto, "ranking.json"), "w", encoding="utf-8") as f:
+        json.dump(ranking_serializavel, f, indent=4, ensure_ascii=False)
 
     # ===============================
     # GRÁFICO
     # ===============================
-
-    ranking_ordenado = sorted(ranking, key=lambda x: x[1], reverse=True)
-
     nomes = [x[0] for x in ranking_ordenado]
     scores = [x[1] for x in ranking_ordenado]
 
+    import matplotlib.pyplot as plt
     plt.figure(figsize=(10, 6))
     plt.barh(nomes, scores)
     plt.gca().invert_yaxis()
     plt.title("Ranking dos Modelos")
     plt.tight_layout()
-
-    caminho_grafico = os.path.join(pasta_projeto, "ranking.png")
-    plt.savefig(caminho_grafico)
+    plt.savefig(os.path.join(pasta_projeto, "ranking.png"))
     plt.close()
 
     # ===============================
     # RELATÓRIO TXT
     # ===============================
-
     caminho_relatorio = os.path.join(pasta_projeto, "resultado.txt")
 
     with open(caminho_relatorio, "w", encoding="utf-8") as f:
@@ -253,19 +253,15 @@ def treinar_automl(caminho_csv, pasta_projeto):
     # ===============================
     # PDF
     # ===============================
-
     from pdf_report import gerar_pdf
 
-    caminho_pdf = os.path.join(pasta_projeto, "relatorio.pdf")
-
     gerar_pdf(
-        caminho_pdf=caminho_pdf,
+        caminho_pdf=os.path.join(pasta_projeto, "relatorio.pdf"),
         texto=open(caminho_relatorio, encoding="utf-8").read(),
-        imagem=caminho_grafico
+        imagem=os.path.join(pasta_projeto, "ranking.png")
     )
 
     # ===============================
     # RETORNO
     # ===============================
-
-    return tipo, melhor_nome, melhor_score, caminho_relatorio, caminho_grafico
+    return tipo, melhor_nome, melhor_score, caminho_relatorio, os.path.join(pasta_projeto, "ranking.png")

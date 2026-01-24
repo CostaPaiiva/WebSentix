@@ -608,3 +608,109 @@ body {
     border: 1px solid #334155;
     resize: vertical;
 }
+
+.timeline {
+    position: relative;
+    margin: 40px auto;
+    max-width: 900px;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #ddd;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+    padding-left: 60px;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: 12px;
+    top: 20px;
+    width: 20px;
+    height: 20px;
+    background: #3498db;
+    border-radius: 50%;
+}
+
+.timeline-item.producao .timeline-dot {
+    background: #27ae60;
+    box-shadow: 0 0 10px #27ae60;
+}
+
+.timeline-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.metricas {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.acoes {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 12px;
+    background: #3498db;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-warning {
+    background: #f39c12;
+}
+
+.tag-producao {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.badge-producao {
+    background: #eafaf1;
+    border: 1px solid #27ae60;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.tabela th, .tabela td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.tabela th {
+    text-align: left;
+    color: #ffd700;
+}
+
+.card.destaque {
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255,215,0,0.2);
+}
