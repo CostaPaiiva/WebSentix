@@ -191,7 +191,20 @@ body {
 }
 
 /* ===========================
-   BOTÃO
+   BOTÕES PADRÃO
+   =========================== */
+.btn, .btn-primary, .btn-warning, .btn-secondary, .big-btn {
+    display: inline-block;
+    border-radius: 5px;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none; /* remove sublinhado */
+    transition: 0.2s;
+}
+
+/* ===========================
+   BOTÃO PRINCIPAL - GRADIENTE
    =========================== */
 .btn-primary {
     border: none;
@@ -200,18 +213,66 @@ body {
     color: white;
     background: linear-gradient(135deg, #7c3aed, #6366f1, #22d3ee);
     transition: 0.2s;
+    text-decoration: none; /* garante que não sublinhe */
 }
 
+/* Garante que nenhum estado do link sublinhe */
+.btn-primary:link,
+.btn-primary:visited,
+.btn-primary:hover,
+.btn-primary:active {
+    text-decoration: none;
+}
+
+/* ===========================
+   BIG BUTTON
+   =========================== */
 .big-btn {
     font-size: 26px;
     padding: 26px 70px;
+    text-decoration: none; /* garante que não sublinhe */
 }
 
-.btn-primary:hover {
+/* Hover do botão principal */
+.btn-primary:hover, .big-btn:hover {
     transform: scale(1.07);
     box-shadow:
         0 0 30px rgba(124, 58, 237, 0.6),
         0 0 80px rgba(34, 211, 238, 0.4);
+}
+
+/* ===========================
+   BOTÃO WARNING / ALERTA
+   =========================== */
+.btn-warning {
+    background-color: #ffc107; /* amarelo */
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 15px;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.btn-warning:hover {
+    opacity: 0.85;
+}
+
+/* ===========================
+   BOTÃO SECUNDÁRIO
+   =========================== */
+.btn-secondary {
+    background-color: #ccc;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 15px;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    opacity: 0.85;
 }
 
 /* ===========================
@@ -538,7 +599,7 @@ body {
 
 .badge-producao {
     background: #1abc9c;
-    color: #fff;
+    color: #080202;
     padding: 15px 25px;
     border-radius: 10px;
     font-weight: bold;
@@ -700,7 +761,7 @@ body {
 }
 
 .badge-producao {
-    background: #eafaf1;
+    background: #8f9994;
     border: 1px solid #27ae60;
     padding: 10px;
     border-radius: 8px;
