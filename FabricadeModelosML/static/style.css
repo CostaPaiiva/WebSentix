@@ -1083,3 +1083,170 @@ body {
 .timeline-item.producao .timeline-dot {
     background-color: #0a0;
 }
+
+/* ===========================
+   RESET E FONTE
+   =========================== */
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===========================
+   CONTAINER PRINCIPAL
+   =========================== */
+.container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* ===========================
+   TÍTULOS
+   =========================== */
+.title {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+/* ===========================
+   GRID DE CARDS FIXO
+   =========================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* sempre 2 cards lado a lado */
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* empilha no mobile */
+    }
+}
+
+/* ===========================
+   CARDS
+   =========================== */
+.card.dashboard-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* ===========================
+   RELATÓRIO DO MODELO
+   =========================== */
+.report-box .report-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.report-box .report-item.highlight {
+    background-color: #f3f3f3;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+.report-subtitle {
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* ===========================
+   LISTA DE RANKING
+   =========================== */
+.ranking-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.ranking-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid #eee;
+    border-radius: 6px;
+}
+
+.ranking-list li.top1 { background-color: #ffd70033; font-weight: bold; }
+.ranking-list li.top2 { background-color: #c0c0c033; font-weight: bold; }
+.ranking-list li.top3 { background-color: #cd7f3233; font-weight: bold; }
+
+/* ===========================
+   BADGES PRODUÇÃO
+   =========================== */
+.badge-producao {
+    text-align: center;
+    font-weight: bold;
+    color: #0a0;
+    margin-bottom: 20px;
+}
+
+/* ===========================
+   BOTÕES DASHBOARD - FLAT
+   =========================== */
+.dashboard-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.big-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;   /* tamanho confortável */
+    padding: 14px 40px;
+    border-radius: 12px;
+    text-decoration: none;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    min-width: 200px;
+    gap: 10px;
+    border: 1px solid #ccc;      /* contorno leve */
+    background-color: #fff;       /* cor igual ao card/página */
+    color: #333;                  /* texto escuro */
+}
+
+/* Hover discreto para todos os botões */
+.big-btn:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    background-color: #f5f5f5; /* leve destaque */
+}
+
+/* ===========================
+   RESPONSIVIDADE
+   =========================== */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* empilha no mobile */
+    }
+    
+    .dashboard-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+}

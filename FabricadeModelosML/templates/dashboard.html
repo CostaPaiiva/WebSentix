@@ -12,6 +12,7 @@
     <h1 class="title">Teste de Modelos</h1>
     <p class="subtitle">Resultado do treinamento do modelo</p>
 
+    <!-- ================= GRID DE CARDS ================= -->
     <div class="dashboard-grid">
 
         <!-- ================= CARD DO RELATÓRIO ================= -->
@@ -70,7 +71,7 @@
     </div>
 
     <!-- ================= ÁREA DE BOTÕES ================= -->
-    <div class="dashboard-actions">
+    <div class="dashboard-buttons">
 
         {% if not em_producao %}
         <a href="/marcar_producao/{{ projeto }}/{{ versao }}" class="btn-primary big-btn">
@@ -83,16 +84,17 @@
         {% endif %}
 
         <!-- BOTÃO TIMELINE -->
-        <a href="/timeline/{{ projeto }}" class="btn-secondary big-btn">
+        <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
             Ver Timeline / Histórico
         </a>
 
         <!-- BOTÃO COMPARAR VERSÕES -->
-        <a href="/comparar_duas/{{ projeto }}" class="btn-secondary big-btn">
+        <a href="/comparar_duas/{{ projeto }}" class="btn-comparar big-btn">
             Comparar Versões
         </a>
 
-        <a href="/" class="btn-secondary big-btn">
+        <!-- BOTÃO TREINAR OUTRO MODELO -->
+        <a href="/" class="btn-treinar big-btn">
             Treinar outro modelo
         </a>
 
