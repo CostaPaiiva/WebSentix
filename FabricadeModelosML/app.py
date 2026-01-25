@@ -146,79 +146,52 @@ def historico(projeto):
 def timeline(projeto):
     import os, json
 
-    pasta_base = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
 
-    if not os.path.exists(pasta_base):
+    if not os.path.exists(pasta_treinos):
         return f"Projeto {projeto} não encontrado", 404
 
-    # Detecta automaticamente onde estão as versões
-    if os.path.exists(os.path.join(pasta_base, "treinos")):
-        pasta_projeto = os.path.join(pasta_base, "treinos")
-    else:
-        pasta_projeto = pasta_base
-
-    print("📂 Lendo versões em:", pasta_projeto)
-    print("📂 Conteúdo:", os.listdir(pasta_projeto))
-
     historico = []
+    producao_atual = None
 
-    for versao in os.listdir(pasta_projeto):
+    print("📂 Lendo versões em:", pasta_treinos)
+    print("📂 Conteúdo:", os.listdir(pasta_treinos))
 
-        if not versao.lower().startswith("v"):
-            continue
+    for versao in sorted(os.listdir(pasta_treinos)):
+        pasta_versao = os.path.join(pasta_treinos, versao)
+        meta_path = os.path.join(pasta_versao, "meta.json")
 
-        pasta_versao = os.path.join(pasta_projeto, versao)
-
-        if not os.path.isdir(pasta_versao):
-            continue
-
-        caminho_meta = os.path.join(pasta_versao, "meta.json")
-
-        if not os.path.exists(caminho_meta):
+        if not os.path.exists(meta_path):
             print("⚠️ Sem meta.json em", pasta_versao)
             continue
 
-        try:
-            with open(caminho_meta, "r", encoding="utf-8") as f:
-                meta = json.load(f)
+        with open(meta_path, "r", encoding="utf-8") as f:
+            meta = json.load(f)
 
-            # Garante campos mínimos
-            meta["versao"] = versao
-            if "comentario" not in meta:
-                meta["comentario"] = ""
+        item = {
+            "versao": versao,
+            "data": meta.get("data", ""),
+            "comentario": meta.get("comentario", ""),
+            "melhor_modelo": meta.get("melhor_modelo", ""),
+            "melhor_score": meta.get("melhor_score"),
+            "acc": meta.get("acc"),
+            "f1": meta.get("f1"),
+            "metricas": meta.get("metricas", {}),
+            "em_producao": meta.get("producao", False)
+        }
 
-            # Tenta carregar métricas se existirem
-            metricas = {}
-            caminho_resultados = os.path.join(pasta_versao, "resultados.json")
-            if os.path.exists(caminho_resultados):
-                with open(caminho_resultados, "r", encoding="utf-8") as f:
-                    metricas = json.load(f)
+        if item["em_producao"]:
+            producao_atual = versao
 
-            meta["metricas"] = metricas
-
-            historico.append(meta)
-
-        except Exception as e:
-            print("❌ Erro ao ler", caminho_meta, e)
-
-    # Ordena do mais recente para o mais antigo
-    historico = sorted(historico, key=lambda x: x.get("data", ""), reverse=True)
-
-    # Descobre produção
-    producao = None
-    caminho_prod = os.path.join(pasta_base, "PRODUCAO.txt")
-    if os.path.exists(caminho_prod):
-        with open(caminho_prod, "r", encoding="utf-8") as f:
-            producao = f.read().strip()
-
-    print("📊 Timeline carregada com", len(historico), "versões")
+        historico.append(item)
 
     return render_template(
         "timeline.html",
         projeto=projeto,
         historico=historico,
-        producao=producao
+        producao=producao_atual
     )
+
 
 @app.route("/ver_detalhes/<projeto>/<versao>")
 def ver_detalhes(projeto, versao):
@@ -272,6 +245,38 @@ def restaurar_versao(projeto, versao):
     print(f"🚀 Versão {versao} restaurada como produção em {projeto}")
 
     return redirect(f"/timeline/{projeto}")
+
+@app.route("/editar_comentario/<projeto>/<versao>", methods=["GET", "POST"])
+def editar_comentario(projeto, versao):
+    import os, json
+
+    pasta = os.path.join(PROJECTS_FOLDER, projeto, "treinos", versao)
+    meta_path = os.path.join(pasta, "meta.json")
+
+    if not os.path.exists(meta_path):
+        return f"meta.json não encontrado em {pasta}", 404
+
+    with open(meta_path, "r", encoding="utf-8") as f:
+        meta = json.load(f)
+
+    if request.method == "POST":
+        comentario = request.form.get("comentario", "")
+        meta["comentario"] = comentario
+
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta, f, indent=4, ensure_ascii=False)
+
+        return redirect(url_for("timeline", projeto=projeto))
+
+    comentario_atual = meta.get("comentario", "")
+
+    return render_template(
+        "editar_comentario.html",
+        projeto=projeto,
+        versao=versao,
+        comentario=comentario_atual
+    )
+
 
 @app.route("/salvar_comentario/<projeto>/<versao>", methods=["POST"])
 def salvar_comentario(projeto, versao):

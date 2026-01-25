@@ -40,9 +40,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
     X = X[mask]
     y = y[mask]
 
-    # ===============================
     # DETECTA TIPO DE PROBLEMA
-    # ===============================
+
     if y.dtype == "object":
         tipo = "classificacao"
         y = y.astype("category").cat.codes
@@ -55,9 +54,8 @@ def treinar_automl(caminho_csv, pasta_projeto):
 
     print("🧠 Tipo de problema detectado:", tipo)
 
-    # ===============================
     # PIPELINES DE PRÉ-PROCESSAMENTO
-    # ===============================
+
     from sklearn.pipeline import Pipeline
     from sklearn.compose import ColumnTransformer
     from sklearn.preprocessing import StandardScaler, OneHotEncoder, PolynomialFeatures

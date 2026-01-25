@@ -26,16 +26,24 @@
 
                 <h3>📦 {{ item.versao }}</h3>
 
-                <div class="data">📅 {{ item.data }}</div>
+                {% if item.data %}
+                    <div class="data">📅 {{ item.data }}</div>
+                {% endif %}
 
                 {% if item.comentario %}
                     <p class="comentario">💬 {{ item.comentario }}</p>
                 {% endif %}
 
-                {% if item.metricas %}
+                {% if item.melhor_modelo or item.melhor_score or item.acc or item.f1 %}
                 <div class="metricas">
-                    <p>🏆 <b>Modelo:</b> <span class="modelo">{{ item.melhor_modelo }}</span></p>
-                    <p>📈 <b>Score:</b> <span class="score">{{ "%.4f"|format(item.melhor_score) }}</span></p>
+
+                    {% if item.melhor_modelo %}
+                        <p>🏆 <b>Modelo:</b> <span class="modelo">{{ item.melhor_modelo }}</span></p>
+                    {% endif %}
+
+                    {% if item.melhor_score is not none %}
+                        <p>📈 <b>Score:</b> <span class="score">{{ "%.4f"|format(item.melhor_score) }}</span></p>
+                    {% endif %}
 
                     {% if item.acc is not none %}
                         <p>🎯 <b>Acc:</b> <span class="metrica">{{ "%.4f"|format(item.acc) }}</span></p>
@@ -44,11 +52,16 @@
                     {% if item.f1 is not none %}
                         <p>🧪 <b>F1:</b> <span class="metrica">{{ "%.4f"|format(item.f1) }}</span></p>
                     {% endif %}
+
                 </div>
                 {% endif %}
 
                 <div class="acoes">
                     <a class="btn" href="/ver_detalhes/{{ projeto }}/{{ item.versao }}">🔍 Ver detalhes</a>
+
+                    <a class="btn" href="/editar_comentario/{{ projeto }}/{{ item.versao }}">
+                        ✏️ Comentário
+                    </a>
 
                     {% if not item.em_producao %}
                         <a class="btn btn-warning" href="/restaurar/{{ projeto }}/{{ item.versao }}">
