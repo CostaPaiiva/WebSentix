@@ -34,7 +34,7 @@
 
                 <div class="report-item">
                     <span class="report-label">⭐ Score:</span>
-                    <span class="report-value">{{ melhor_score }}</span>
+                    <span class="report-value">{{ "%.4f"|format(melhor_score) }}</span>
                 </div>
 
                 <h3 class="report-subtitle">📊 Resultados completos:</h3>
@@ -42,7 +42,7 @@
                 {% for nome, score in resultados.items() %}
                 <div class="report-item small">
                     <span class="report-label">{{ nome }}</span>
-                    <span class="report-value">{{ score }}</span>
+                    <span class="report-value">{{ "%.4f"|format(score) }}</span>
                 </div>
                 {% endfor %}
 
@@ -62,7 +62,7 @@
                         {% if loop.index0 == 2 %}class="top3"{% endif %}
                     >
                         {{ nome }}
-                        <span>{{ score }}</span>
+                        <span>{{ "%.4f"|format(score) }}</span>
                     </li>
                 {% endfor %}
             </ul>
@@ -72,7 +72,18 @@
 
     <!-- ================= ÁREA DE BOTÕES ================= -->
     <div class="dashboard-buttons">
-
+        <!-- BOTÃO TREINAR OUTRO MODELO -->
+        <a href="/" class="btn-treinar big-btn">
+            Treinar outro modelo
+        </a>
+        <!-- BOTÃO COMPARAR VERSÕES -->
+        <a href="/comparar_duas/{{ projeto }}" class="btn-comparar big-btn">
+            Comparar Versões
+        </a>
+        <!-- BOTÃO TIMELINE -->
+        <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
+            Ver Timeline / Histórico
+        </a>
         {% if not em_producao %}
         <a href="/marcar_producao/{{ projeto }}/{{ versao }}" class="btn-primary big-btn">
             Marcar esta versão como produção
@@ -83,24 +94,10 @@
         </div>
         {% endif %}
 
-        <!-- BOTÃO TIMELINE -->
-        <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
-            Ver Timeline / Histórico
-        </a>
-
-        <!-- BOTÃO COMPARAR VERSÕES -->
-        <a href="/comparar_duas/{{ projeto }}" class="btn-comparar big-btn">
-            Comparar Versões
-        </a>
-
-        <!-- BOTÃO TREINAR OUTRO MODELO -->
-        <a href="/" class="btn-treinar big-btn">
-            Treinar outro modelo
-        </a>
-
     </div>
 
 </div>
 
 </body>
 </html>
+

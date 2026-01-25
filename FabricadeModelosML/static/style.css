@@ -235,7 +235,7 @@ body {
 
 /* Hover do botão principal */
 .btn-primary:hover, .big-btn:hover {
-    transform: scale(1.07);
+    transform: scale(1.12);
     box-shadow:
         0 0 30px rgba(124, 58, 237, 0.6),
         0 0 80px rgba(34, 211, 238, 0.4);
