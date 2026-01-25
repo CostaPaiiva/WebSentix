@@ -1,10 +1,8 @@
 {
-    "versao": "v1",
-    "data": "2026-01-25 13:14:02",
-    "tipo_problema": "regressao",
     "melhor_modelo": "GradientBoosting",
     "melhor_score": 0.8560413931130715,
-    "metricas": {
+    "tipo_problema": "regressao",
+    "metricas_por_modelo": {
         "RandomForest": 0.8341140223305807,
         "ExtraTrees": 0.8197937135969697,
         "GradientBoosting": 0.8560413931130715,
@@ -14,20 +12,5 @@
         "SVR": -0.10255883513733174,
         "KNN": 0.6826080781286608,
         "DecisionTree": 0.6920877862568015
-    },
-    "dataset_shape": [
-        1338,
-        7
-    ],
-    "colunas": [
-        "age",
-        "sex",
-        "bmi",
-        "children",
-        "smoker",
-        "region",
-        "charges"
-    ],
-    "arquivo_dataset": "dataset.csv",
-    "comentario": ""
+    }
 }

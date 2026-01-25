@@ -843,7 +843,7 @@ body {
 .timeline-item span,
 .timeline-item small,
 .timeline-item div {
-    color: #e5e7eb !important;   /* cinza claro */
+    color: #010307 !important;   /* cinza claro */
 }
 
 /* Labels com emoji */
@@ -880,4 +880,145 @@ body {
 /* Ícones emoji */
 .timeline-item {
     color: #e5e7eb;
+}
+
+/* ===========================
+   RESET E FONTE
+   =========================== */
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===========================
+   CONTAINER PRINCIPAL
+   =========================== */
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* ===========================
+   TÍTULOS
+   =========================== */
+.title {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+/* ===========================
+   BADGES PRODUÇÃO
+   =========================== */
+.badge-producao-topo {
+    text-align: center;
+    margin-bottom: 15px;
+    font-weight: bold;
+    color: #0a0;
+}
+
+/* ===========================
+   TIMELINE
+   =========================== */
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    background-color: #555;
+    border-radius: 50%;
+    position: absolute;
+    left: 0;
+    top: 10px;
+}
+
+.timeline-card {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-left: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ===========================
+   DATAS E MÉTRICAS
+   =========================== */
+.data {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.metricas p {
+    margin: 5px 0;
+}
+
+.metrica, .modelo, .score {
+    font-weight: bold;
+    color: #333;
+}
+
+/* ===========================
+   COMENTÁRIOS
+   =========================== */
+.comentario-container {
+    margin-top: 10px;
+    padding-top: 5px;
+    border-top: 1px solid #ddd;
+    color: black; /* garante que qualquer texto dentro seja preto */
+}
+
+.comentario {
+    color: black !important;  /* força o texto preto */
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ===========================
+   AÇÕES / BOTÕES
+   =========================== */
+.acoes a.btn, .btn-warning, .btn-secondary {
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-right: 5px;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.tag-producao {
+    background-color: #0a0;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+}
+
+/* ===========================
+   BOTÕES SECUNDÁRIOS
+   =========================== */
+.btn-secondary {
+    background-color: #ccc;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+/* ===========================
+   VERSÕES EM PRODUÇÃO
+   =========================== */
+.timeline-item.producao .timeline-dot {
+    background-color: #0a0;
 }

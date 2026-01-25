@@ -1,5 +1,0 @@
-Tipo de problema: classificacao
-
-
-Melhor modelo: 
-Score: -999999

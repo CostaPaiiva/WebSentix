@@ -8,7 +8,7 @@
 <body>
 
 <div class="container">
-    <h1 class="title">📜 Histórico de versões - {{ projeto }}</h1>
+    <h1 class="title">📜 Histórico de versões</h1>
 
     {% if producao %}
         <div class="badge-producao-topo">
@@ -31,7 +31,9 @@
                 {% endif %}
 
                 {% if item.comentario %}
-                    <p class="comentario">💬 {{ item.comentario }}</p>
+                    <div class="comentario-container">
+                        <p class="comentario">💬 {{ item.comentario }}</p>
+                    </div>
                 {% endif %}
 
                 {% if item.melhor_modelo or item.melhor_score or item.acc or item.f1 %}
