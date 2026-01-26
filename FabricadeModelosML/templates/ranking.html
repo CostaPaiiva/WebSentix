@@ -62,18 +62,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.05);
+            font-weight: 600;
             transition: transform 0.2s, background 0.2s;
         }
 
         .ranking-list li span {
             font-weight: normal;
-            color: #555;
+            color: #333;
         }
 
-        .ranking-list li.top1 { background-color: #ffd700; color: #000; } /* Ouro */
-        .ranking-list li.top2 { background-color: #c0c0c0; color: #000; } /* Prata */
-        .ranking-list li.top3 { background-color: #cd7f32; color: #fff; } /* Bronze */
+        /* 🔥 REMOVE cores especiais dos top 3 */
+        .ranking-list li.top1,
+        .ranking-list li.top2,
+        .ranking-list li.top3 {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: #000;
+            font-weight: 600;
+        }
 
         .ranking-list li:hover {
             transform: translateX(5px);
@@ -92,7 +98,7 @@
         }
     </style>
 </head>
-<body>
+<body style="background:red;">
     <div class="container">
         <h1>Ranking de Modelos de Machine Learning</h1>
 

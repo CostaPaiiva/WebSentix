@@ -79,25 +79,6 @@ body {
     box-shadow: 0 0 20px rgba(168,85,247,0.5);
 }
 
-/* Top 3 cores */
-.ranking-list li:nth-child(1) {
-    background: linear-gradient(90deg, #FFD700, #FFEA85); /* Ouro */
-    color: #000;
-    font-weight: bold;
-}
-
-.ranking-list li:nth-child(2) {
-    background: linear-gradient(90deg, #C0C0C0, #E0E0E0); /* Prata */
-    color: #000;
-    font-weight: bold;
-}
-
-.ranking-list li:nth-child(3) {
-    background: linear-gradient(90deg, #CD7F32, #E4A56F); /* Bronze */
-    color: #000;
-    font-weight: bold;
-}
-
 /* Outros participantes */
 .ranking-list li:nth-child(n+4) {
     background: rgba(20,0,40,0.5);
@@ -1108,7 +1089,7 @@ body {
    =========================== */
 .title {
     text-align: center;
-    font-size: 28px;
+    font-size: 55px;
     margin-bottom: 10px;
 }
 
@@ -1186,9 +1167,6 @@ body {
     border-radius: 6px;
 }
 
-.ranking-list li.top1 { background-color: #ffd70033; font-weight: bold; }
-.ranking-list li.top2 { background-color: #c0c0c033; font-weight: bold; }
-.ranking-list li.top3 { background-color: #cd7f3233; font-weight: bold; }
 
 /* ===========================
    BADGES PRODUÇÃO
