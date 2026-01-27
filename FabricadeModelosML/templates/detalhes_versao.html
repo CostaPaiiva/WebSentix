@@ -11,39 +11,47 @@
 
     <h1 class="title">🔎 {{ projeto }} - {{ versao }}</h1>
 
-    <!-- AÇÕES -->
+    <!-- ================= AÇÕES ================= -->
     <div class="card destaque" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
-        
-        <!-- RESTAURAR -->
-        {% if producao == versao %}
+
+        <!-- MARCAR COMO PRODUÇÃO -->
+        {% if versao_producao == versao %}
             <span class="btn" style="opacity:0.5; cursor:not-allowed;">
                 ✅ Esta versão já está em produção
             </span>
         {% else %}
             <a 
                 class="btn btn-success"
-                href="/restaurar/{{ projeto }}/{{ versao }}"
-                onclick="return confirm('Tem certeza que deseja restaurar {{ versao }} como versão de produção?')"
+                href="/marcar_producao/{{ projeto }}/{{ versao }}"
+                onclick="return confirm('Tem certeza que deseja marcar {{ versao }} como versão de produção?')"
             >
-                🚀 Restaurar esta versão
+                🚀 Marcar esta versão como produção
             </a>
         {% endif %}
 
-
         <!-- COMPARAR COM PRODUÇÃO -->
-        {% if producao %}
-        <a 
-            class="btn"
-            href="/comparar/{{ projeto }}/{{ producao }}/{{ versao }}"
-        >
-            ⚖️ Comparar com Produção ({{ producao }})
-        </a>
+        {% if versao_producao == versao %}
+            <div class="badge-producao">
+                🟢 ESTA VERSÃO ESTÁ EM PRODUÇÃO
+            </div>
+
+        {% elif versao_producao %}
+            <a 
+                class="btn"
+                href="/comparar/{{ projeto }}/{{ versao_producao }}/{{ versao }}"
+            >
+                ⚖️ Comparar com Produção ({{ versao_producao }})
+            </a>
+
         {% else %}
-        <span style="opacity:0.7;">⚠️ Nenhuma versão em produção</span>
+            <div class="badge-warning">
+                ⚠️ Nenhuma versão em produção
+            </div>
         {% endif %}
+
     </div>
 
-    <!-- RESUMO -->
+    <!-- ================= RESUMO ================= -->
     <div class="card destaque">
         <h2>🏆 Melhor Modelo</h2>
         <p><b>Modelo:</b> {{ meta.melhor_modelo }}</p>
@@ -52,7 +60,7 @@
         <p><b>Data:</b> {{ meta.data }}</p>
     </div>
 
-    <!-- MÉTRICAS -->
+    <!-- ================= MÉTRICAS ================= -->
     <div class="card">
         <h2>📊 Métricas por Modelo</h2>
         <table class="tabela">
@@ -69,7 +77,7 @@
         </table>
     </div>
 
-    <!-- RANKING -->
+    <!-- ================= RANKING ================= -->
     <div class="card">
         <h2>🥇 Ranking</h2>
         <img 
@@ -78,7 +86,7 @@
         >
     </div>
 
-    <!-- ARQUIVOS -->
+    <!-- ================= ARQUIVOS ================= -->
     <div class="card">
         <h2>📦 Arquivos</h2>
 

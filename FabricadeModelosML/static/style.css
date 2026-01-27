@@ -560,7 +560,7 @@ body {
 .report-subtitle {
     margin: 25px 0 15px 0;            /* Espaçamento em volta */
     font-size: 20px;                  /* Tamanho do texto */
-    color: #a855f7;                   /* Roxo bonito */
+    color: #1f0a33;                   /* Roxo bonito */
     text-align: left;                 /* Alinha à esquerda */
 }
 
@@ -732,7 +732,7 @@ body {
 }
 
 .btn-warning {
-    background: #f39c12;
+    background: #b67103;
 }
 
 .tag-producao {
@@ -866,7 +866,7 @@ body {
 }
 
 .timeline-item h3 {
-    color: red !important;
+    color: rgb(12, 3, 3) !important;
 }
 
 /* ==========================
@@ -895,13 +895,13 @@ body {
 
 /* Modelo */
 .timeline-item .modelo {
-    color: #22c55e !important;   /* verde */
+    color: #020804 !important;   /* verde */
     font-weight: bold;
 }
 
 /* Score */
 .timeline-item .score {
-    color: #60a5fa !important;   /* azul */
+    color: #020913 !important;   /* azul */
     font-weight: bold;
 }
 
@@ -1147,7 +1147,7 @@ body {
 .report-subtitle {
     margin-top: 15px;
     margin-bottom: 8px;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
 }
 

@@ -13,27 +13,26 @@
     <p class="subtitle">Projeto: {{ projeto }}</p>
 
     <!-- Seletor -->
-    <form method="GET" action="/comparar_duas/{{ projeto }}" style="margin-bottom:30px; display:flex; gap:20px; justify-content:center;">
+    <form style="margin-bottom:30px; display:flex; gap:20px; justify-content:center;" onsubmit="event.preventDefault(); comparar();">
 
-        <select name="versoes" required>
+        <select required>
             <option value="">Selecione versão A</option>
             {% for v in versoes %}
                 <option value="{{ v }}" {% if v == v1 %}selected{% endif %}>{{ v }}</option>
             {% endfor %}
         </select>
 
-        <select name="versoes" required>
+        <select required>
             <option value="">Selecione versão B</option>
             {% for v in versoes %}
                 <option value="{{ v }}" {% if v == v2 %}selected{% endif %}>{{ v }}</option>
             {% endfor %}
         </select>
 
-        <button class="btn-secondary" type="submit">Comparar</button>
+        <button class="btn-secondary" type="button" onclick="comparar()">Comparar</button>
     </form>
 
     {% if vencedora %}
-    <!-- Card da vencedora -->
     <div class="card destaque" style="text-align:center; margin-bottom:30px;">
         <h2>🏆 Vencedora: {{ vencedora }}</h2>
 
@@ -51,7 +50,6 @@
 
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px;">
 
-        <!-- Versão A -->
         <div class="card {% if v1 == vencedora %}destaque{% endif %}">
             <h2>🏷️ {{ v1 }}</h2>
             <p><b>Tipo:</b> {{ meta1.tipo_problema }}</p>
@@ -74,7 +72,6 @@
             </ul>
         </div>
 
-        <!-- Versão B -->
         <div class="card {% if v2 == vencedora %}destaque{% endif %}">
             <h2>🏷️ {{ v2 }}</h2>
             <p><b>Tipo:</b> {{ meta2.tipo_problema }}</p>
@@ -106,6 +103,21 @@
     </div>
 
 </div>
+
+<script>
+function comparar() {
+    const selects = document.querySelectorAll("select");
+    const v1 = selects[0].value;
+    const v2 = selects[1].value;
+
+    if (!v1 || !v2) {
+        alert("Selecione duas versões");
+        return;
+    }
+
+    window.location.href = `/comparar_duas/{{ projeto }}/${v1}/${v2}`;
+}
+</script>
 
 </body>
 </html>

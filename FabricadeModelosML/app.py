@@ -122,12 +122,35 @@ def arquivos_projeto(projeto, versao, filename):
 
 @app.route("/marcar_producao/<projeto>/<versao>")
 def marcar_producao(projeto, versao):
+    import os, json
+
     pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
 
-    marcar_como_producao(pasta_projeto, versao)
+    # Garante que a pasta existe
+    os.makedirs(pasta_projeto, exist_ok=True)
 
-    # Volta para o dashboard da mesma versão
-    return redirect(url_for("dashboard", projeto=projeto))
+    caminho = os.path.join(pasta_projeto, "producao.json")
+
+    with open(caminho, "w", encoding="utf-8") as f:
+        json.dump({"versao": versao}, f, indent=4)
+
+    print("✅ Produção marcada:", projeto, versao)
+
+    # 🔁 VOLTA PARA A TELA DE DETALHES DA MESMA VERSÃO
+    return redirect(url_for("ver_detalhes", projeto=projeto, versao=versao))
+
+def obter_versao_producao(pasta_projeto):
+    import os, json
+
+    caminho = os.path.join(pasta_projeto, "producao.json")
+
+    if not os.path.exists(caminho):
+        return None
+
+    with open(caminho, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+
+    return dados.get("versao")
 
 @app.route("/historico/<projeto>")
 def historico(projeto):
@@ -210,11 +233,27 @@ def ver_detalhes(projeto, versao):
     with open(caminho_meta, "r", encoding="utf-8") as f:
         meta = json.load(f)
 
+    # =========================
+    # Verifica se é produção
+    # =========================
+    caminho_producao = os.path.join(PROJECTS_FOLDER, projeto, "producao.json")
+
+    em_producao = False
+    if os.path.exists(caminho_producao):
+        with open(caminho_producao, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+            if dados.get("versao") == versao:
+                em_producao = True
+
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    versao_producao = obter_versao_producao(pasta_projeto)
+
     return render_template(
         "detalhes_versao.html",
         projeto=projeto,
         versao=versao,
-        meta=meta
+        meta=meta,
+        versao_producao=versao_producao
     )
 
 @app.route("/restaurar/<projeto>/<versao>")
@@ -348,48 +387,155 @@ def comparar_versoes(projeto, v1, v2):
         diff=diff
     )
 
-
-@app.route("/comparar_duas/<projeto>", methods=["GET"])
-def comparar_duas(projeto):
+@app.route("/comparar_duas/<projeto>")
+@app.route("/comparar_duas/<projeto>/<v1>/<v2>")
+def comparar_duas(projeto, v1=None, v2=None):
     import os, json
 
-    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_treinos = os.path.join(pasta_projeto, "treinos")
+
+    versoes = sorted(os.listdir(pasta_treinos)) if os.path.exists(pasta_treinos) else []
+
+    def carregar_meta(v):
+        caminho = os.path.join(pasta_treinos, v, "meta.json")
+        if not os.path.exists(caminho):
+            return None
+        with open(caminho, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    # Se não veio pela URL, tenta pegar pelo form
+    if v1 is None or v2 is None:
+        selecionadas = request.args.getlist("versoes")
+        if len(selecionadas) == 2:
+            v1, v2 = selecionadas
+        else:
+            return render_template(
+                "comparar_duas.html",
+                projeto=projeto,
+                versoes=versoes,
+                v1=None,
+                v2=None,
+                meta1=None,
+                meta2=None,
+                vencedora=None,
+                producao=obter_versao_producao(pasta_projeto)
+            )
+
+    meta1 = carregar_meta(v1)
+    meta2 = carregar_meta(v2)
+
+    if not meta1 or not meta2:
+        return "Uma das versões não existe", 404
+
+    # Decide vencedora
+    if meta1["melhor_score"] > meta2["melhor_score"]:
+        vencedora = v1
+    else:
+        vencedora = v2
+
+    return render_template(
+        "comparar_duas.html",
+        projeto=projeto,
+        versoes=versoes,
+        v1=v1,
+        v2=v2,
+        meta1=meta1,
+        meta2=meta2,
+        vencedora=vencedora,
+        producao=obter_versao_producao(pasta_projeto)
+    )
+
+
+    meta1_path = os.path.join(pasta_treinos, v1, "meta.json")
+    meta2_path = os.path.join(pasta_treinos, v2, "meta.json")
+
+    if not os.path.exists(meta1_path) or not os.path.exists(meta2_path):
+        return "Uma das versões não possui meta.json", 404
+
+    with open(meta1_path, "r", encoding="utf-8") as f:
+        meta1 = json.load(f)
+
+    with open(meta2_path, "r", encoding="utf-8") as f:
+        meta2 = json.load(f)
+
+    vencedora = None
+    try:
+        if meta1["melhor_score"] > meta2["melhor_score"]:
+            vencedora = v1
+        elif meta2["melhor_score"] > meta1["melhor_score"]:
+            vencedora = v2
+    except:
+        pass
+
+    return render_template(
+        "comparar_duas.html",
+        projeto=projeto,
+        versoes=versoes,
+        v1=v1,
+        v2=v2,
+        meta1=meta1,
+        meta2=meta2,
+        vencedora=vencedora,
+        producao=obter_versao_producao(pasta_projeto)
+    )
+
+
+    # Agora carrega os meta.json
+    meta1_path = os.path.join(pasta_treinos, v1, "meta.json")
+    meta2_path = os.path.join(pasta_treinos, v2, "meta.json")
+
+    if not os.path.exists(meta1_path) or not os.path.exists(meta2_path):
+        return "Uma das versões não possui meta.json", 404
+
+    with open(meta1_path, "r", encoding="utf-8") as f:
+        meta1 = json.load(f)
+
+    with open(meta2_path, "r", encoding="utf-8") as f:
+        meta2 = json.load(f)
+
+    # Decide vencedora
+    vencedora = None
+    try:
+        if meta1["melhor_score"] > meta2["melhor_score"]:
+            vencedora = v1
+        elif meta2["melhor_score"] > meta1["melhor_score"]:
+            vencedora = v2
+    except:
+        pass
+
+    return render_template(
+        "comparar_duas.html",
+        projeto=projeto,
+        versoes=versoes,
+        v1=v1,
+        v2=v2,
+        meta1=meta1,
+        meta2=meta2,
+        vencedora=vencedora,
+        producao=obter_versao_producao(pasta_projeto)
+    )
+
+    # Decide vencedora
+    if meta1["melhor_score"] > meta2["melhor_score"]:
+        vencedora = v1
+    else:
+        vencedora = v2
 
     # Lê produção atual
     producao = None
-    caminho_prod = os.path.join(PROJECTS_FOLDER, projeto, "PRODUCAO.txt")
+    caminho_prod = os.path.join(PROJECTS_FOLDER, projeto, "producao.json")
     if os.path.exists(caminho_prod):
         with open(caminho_prod, "r", encoding="utf-8") as f:
-            producao = f.read().strip()
+            producao = json.load(f).get("versao")
 
-    # Lista só versões que tem meta.json
+    # Lista versões para o select
     versoes = []
-    for v in os.listdir(pasta_projeto):
-        if os.path.exists(os.path.join(pasta_projeto, v, "meta.json")):
+    for v in os.listdir(pasta_treinos):
+        if os.path.exists(os.path.join(pasta_treinos, v, "meta.json")):
             versoes.append(v)
 
     versoes = sorted(versoes)
-
-    selecionadas = request.args.getlist("versoes")
-
-    meta1 = meta2 = None
-    v1 = v2 = None
-    vencedora = None
-
-    def carregar_meta(v):
-        with open(os.path.join(pasta_projeto, v, "meta.json"), "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    if len(selecionadas) == 2:
-        v1, v2 = selecionadas
-        meta1 = carregar_meta(v1)
-        meta2 = carregar_meta(v2)
-
-        # Decide vencedora
-        if meta1["melhor_score"] > meta2["melhor_score"]:
-            vencedora = v1
-        else:
-            vencedora = v2
 
     return render_template(
         "comparar_duas.html",
