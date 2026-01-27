@@ -723,7 +723,7 @@ body {
 }
 
 .btn {
-    padding: 8px 12px;
+    padding: 4px 6px;
     background: #3498db;
     color: #fff;
     border-radius: 6px;
@@ -876,7 +876,7 @@ body {
 /* Data */
 .timeline-item .data,
 .timeline-item .data span {
-    color: #38bdf8 !important;   /* azul claro */
+    color: #040d11 !important;   /* azul claro */
     font-weight: 600;
 }
 
@@ -890,7 +890,7 @@ body {
 
 /* Labels com emoji */
 .timeline-item p b {
-    color: #fbbf24 !important;   /* dourado */
+    color: #2955a7 !important;   /* dourado */
 }
 
 /* Modelo */
