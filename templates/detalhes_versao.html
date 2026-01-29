@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>🔎 Detalhes - {{ projeto }} - {{ versao }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">🔎 {{ projeto }} - {{ versao }}</h1>
+
+    <!-- ================= AÇÕES ================= -->
+    <div class="card destaque" style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+
+        <!-- MARCAR COMO PRODUÇÃO -->
+        {% if versao_producao == versao %}
+            <span class="btn" style="opacity:0.5; cursor:not-allowed;">
+                ✅ Esta versão já está em produção
+            </span>
+        {% else %}
+            <a 
+                class="btn btn-success"
+                href="/marcar_producao/{{ projeto }}/{{ versao }}"
+                onclick="return confirm('Tem certeza que deseja marcar {{ versao }} como versão de produção?')"
+            >
+                🚀 Marcar esta versão como produção
+            </a>
+        {% endif %}
+
+        <!-- COMPARAR COM PRODUÇÃO -->
+        {% if versao_producao == versao %}
+            <div class="badge-producao">
+                🟢 ESTA VERSÃO ESTÁ EM PRODUÇÃO
+            </div>
+
+        {% elif versao_producao %}
+            <a 
+                class="btn"
+                <a href="/comparar/{{ projeto }}/{{ producao }}/{{ v.versao }}">
+
+            >
+                ⚖️ Comparar com Produção ({{ versao_producao }})
+            </a>
+
+        {% else %}
+            <div class="badge-warning">
+                ⚠️ Nenhuma versão em produção
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ================= RESUMO ================= -->
+    <div class="card destaque">
+        <h2>🏆 Melhor Modelo</h2>
+        <p><b>Modelo:</b> {{ meta.melhor_modelo }}</p>
+        <p><b>Score:</b> {{ "%.4f"|format(meta.melhor_score) }}</p>
+        <p><b>Tipo:</b> {{ meta.tipo_problema }}</p>
+        <p><b>Data:</b> {{ meta.data }}</p>
+    </div>
+
+    <!-- ================= MÉTRICAS ================= -->
+    <div class="card">
+        <h2>Métricas por Modelo</h2>
+        <table class="tabela">
+            <tr>
+                <th>Modelo</th>
+                <th>Score</th>
+            </tr>
+            {% for modelo, score in meta.metricas.items() %}
+            <tr>
+                <td>{{ modelo }}</td>
+                <td>{{ "%.4f"|format(score) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <!-- ================= RANKING ================= -->
+    <div class="card">
+        <img 
+            src="/files/{{ projeto }}/{{ versao }}/ranking.png" 
+            style="max-width:100%; border-radius:10px;"
+        >
+    </div>
+
+    <!-- ================= ARQUIVOS ================= -->
+    <div class="card">
+        <h2>📦 Arquivos</h2>
+
+        <a class="btn" href="/files/{{ projeto }}/{{ versao }}/relatorio.pdf" target="_blank">
+            📄 Ver PDF
+        </a>
+
+        <a class="btn" href="/files/{{ projeto }}/{{ versao }}/resultado.txt" target="_blank">
+            📄 Ver TXT
+        </a>
+
+        <a class="btn" href="/files/{{ projeto }}/{{ versao }}/dataset.csv" target="_blank">
+            📊 Dataset
+        </a>
+
+        <a class="btn" href="/files/{{ projeto }}/{{ versao }}/ranking.png" target="_blank">
+            📈 Gráfico
+        </a>
+    </div>
+
+    <br>
+
+    <a href="/timeline/{{ projeto }}" class="btn">⬅ Voltar para Timeline</a>
+
+</div>
+
+</body>
+</html>

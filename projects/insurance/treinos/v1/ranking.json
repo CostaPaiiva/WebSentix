@@ -1,0 +1,38 @@
+[
+    {
+        "modelo": "GradientBoosting",
+        "score": 0.8548133549586826
+    },
+    {
+        "modelo": "RandomForest",
+        "score": 0.8371514389335728
+    },
+    {
+        "modelo": "ExtraTrees",
+        "score": 0.8208877256612201
+    },
+    {
+        "modelo": "Lasso",
+        "score": 0.7459512222414171
+    },
+    {
+        "modelo": "Ridge",
+        "score": 0.7459395411307879
+    },
+    {
+        "modelo": "LinearRegression",
+        "score": 0.7459305254811328
+    },
+    {
+        "modelo": "KNN",
+        "score": 0.6826080781286608
+    },
+    {
+        "modelo": "DecisionTree",
+        "score": 0.6808331117695328
+    },
+    {
+        "modelo": "SVR",
+        "score": -0.10255883513733174
+    }
+]

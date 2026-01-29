@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>⚖️ Comparação Rápida - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">⚖️ Comparação Rápida</h1>
+    <p class="subtitle">Projeto: {{ projeto }}</p>
+
+    <div class="card" style="height:350px;">
+        <canvas id="graficoComparacao"></canvas>
+    </div>
+
+    <div class="card" style="margin-top:40px;">
+        <table class="compare-table">
+            <tr>
+                <th>Modelo</th>
+                <th>Score</th>
+            </tr>
+            {% for nome, score in resultados %}
+            <tr>
+                <td>{{ nome }}</td>
+                <td>{{ "%.6f"|format(score) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div style="margin-top:50px;">
+        <a href="/timeline/{{ projeto }}" class="btn-secondary big-btn">Voltar</a>
+    </div>
+
+</div>
+</body>
+</html>

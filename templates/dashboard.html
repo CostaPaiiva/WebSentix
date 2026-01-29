@@ -1,0 +1,98 @@
+<!DOCTYPE html> 
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Dashboard - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1 class="title">Teste de Modelos</h1>
+    <p class="subtitle">Resultado do treinamento do modelo</p>
+
+    <!-- ================= GRID DE CARDS ================= -->
+    <div class="dashboard-grid">
+
+        <!-- ================= CARD DO RELATÓRIO ================= -->
+        <div class="card dashboard-card">
+
+            <h2>📄 Relatório do Modelo</h2>
+
+            <div class="report-box">
+
+                <div class="report-item">
+                    <span class="report-label">📌 Tipo de problema:</span>
+                    <span class="report-value">{{ tipo_problema }}</span>
+                </div>
+
+                <div class="report-item highlight">
+                    <span class="report-label">🏆 Melhor modelo:</span>
+                    <span class="report-value">{{ melhor_modelo }}</span>
+                </div>
+
+                <div class="report-item">
+                    <span class="report-label">⭐ Score:</span>
+                    <span class="report-value">{{ "%.4f"|format(melhor_score) }}</span>
+                </div>
+
+                <h3 class="report-subtitle">📊 Resultados completos:</h3>
+
+                {% for nome, score in resultados.items() %}
+                <div class="report-item small">
+                    <span class="report-label">{{ nome }}</span>
+                    <span class="report-value">{{ "%.4f"|format(score) }}</span>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <!-- ================= CARD DO RANKING ================= -->
+        <div class="card dashboard-card">
+
+            <h2>📈 Todos os Modelos</h2>
+
+            <ul class="ranking-list">
+                {% for nome, score in resultados|dictsort(true, 'value') %}
+                    <li>
+                        {{ nome }}
+                        <span>{{ "%.4f"|format(score) }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- ================= ÁREA DE BOTÕES ================= -->
+    <div class="dashboard-buttons">
+        <!-- BOTÃO TREINAR OUTRO MODELO -->
+        <a href="/" class="btn-treinar big-btn">
+            Treinar outro modelo
+        </a>
+        <!-- BOTÃO COMPARAR VERSÕES -->
+        <a href="/comparar_duas/{{ projeto }}" class="btn-comparar big-btn">
+            Comparar Versões
+        </a>
+        <!-- BOTÃO TIMELINE -->
+        <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
+            Ver Timeline / Histórico
+        </a>
+        {% if not em_producao %}
+        <a href="/marcar_producao/{{ projeto }}/{{ versao }}" class="btn-primary big-btn">
+            Marcar esta versão como produção
+        </a>
+        {% else %}
+        <div class="badge-producao">
+            🟢 ESTA VERSÃO ESTÁ EM PRODUÇÃO
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
