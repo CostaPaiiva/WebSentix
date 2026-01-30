@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -103,25 +103,26 @@
     <a class="btn-secondary" href="/dashboard/{{ projeto }}">⬅ Voltar</a>
 </div>
 
-<!-- 🧠 SCRIPT -->
+<!-- 🧠 SCRIPT (AGORA SUPORTA N VERSÕES) -->
 <script>
 function compararSelecionadas() {
     const checks = document.querySelectorAll(".chk-comparar:checked");
 
-    if (checks.length !== 2) {
-        alert("Selecione exatamente 2 versões para comparar.");
+    if (checks.length < 2) {
+        alert("Selecione pelo menos 2 versões para comparar.");
         return;
     }
 
-    const v1 = checks[0].value;
-    const v2 = checks[1].value;
-
     const projeto = "{{ projeto }}";
 
-    window.location.href = `/comparar/${projeto}/${v1}/${v2}`;
+    let query = "";
+    checks.forEach(chk => {
+        query += `versoes=${chk.value}&`;
+    });
+
+    window.location.href = `/comparar_n/${projeto}?${query}`;
 }
 </script>
 
 </body>
 </html>
-

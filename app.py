@@ -504,6 +504,45 @@ def comparar_versoes(projeto, v1, v2):
         scores=scores,
         resultados=resultados
     )
+@app.route("/comparar_n/<projeto>")
+def comparar_n(projeto):
+    import os, json
+
+    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
+    pasta_treinos = os.path.join(pasta_projeto, "treinos")
+
+    if not os.path.exists(pasta_treinos):
+        return "Projeto não encontrado", 404
+
+    versoes_selecionadas = request.args.getlist("versoes")
+
+    if len(versoes_selecionadas) < 2:
+        return "Selecione pelo menos duas versões", 400
+
+    resultados = []
+
+    for v in versoes_selecionadas:
+        meta_path = os.path.join(pasta_treinos, v, "meta.json")
+        if os.path.exists(meta_path):
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+                resultados.append({
+                    "versao": v,
+                    "score": meta.get("melhor_score", 0),
+                    "modelo": meta.get("melhor_modelo", ""),
+                    "tipo": meta.get("tipo_problema", "")
+                })
+
+    # ranking
+    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+    melhor = resultados[0] if resultados else None
+
+    return render_template(
+        "comparar_n.html",
+        projeto=projeto,
+        resultados=resultados,
+        melhor=melhor
+    )
 
 # Define uma rota alternativa com versões pré-selecionadas
 @app.route("/comparar_duas/<projeto>")

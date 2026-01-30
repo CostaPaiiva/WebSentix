@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>⚖️ Comparação - {{ projeto }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1 class="title">⚖️ Comparação de Versões – {{ projeto }}</h1>
+
+    {% if melhor %}
+        <div class="card destaque">
+            🏆 <b>Melhor versão:</b> {{ melhor.versao }}
+            (Score: {{ "%.4f"|format(melhor.score) }})
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <table class="tabela">
+            <tr>
+                <th>Rank</th>
+                <th>Versão</th>
+                <th>Modelo</th>
+                <th>Score</th>
+            </tr>
+            {% for r in resultados %}
+            <tr {% if loop.first %}style="font-weight:bold; background:#e8f5e9;"{% endif %}>
+                <td>{{ loop.index }}</td>
+                <td>{{ r.versao }}</td>
+                <td>{{ r.modelo }}</td>
+                <td>{{ "%.4f"|format(r.score) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br>
+    <a href="/timeline/{{ projeto }}" class="btn">⬅ Voltar para Timeline</a>
+</div>
+
+</body>
+</html>
