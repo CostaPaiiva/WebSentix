@@ -113,6 +113,11 @@ function compararSelecionadas() {
         return;
     }
 
+    if (checks.length > 10) {
+        alert("Você pode comparar no máximo 10 versões.");
+        return;
+    }
+
     const projeto = "{{ projeto }}";
 
     let query = "";
@@ -123,6 +128,7 @@ function compararSelecionadas() {
     window.location.href = `/comparar_n/${projeto}?${query}`;
 }
 </script>
+
 
 </body>
 </html>

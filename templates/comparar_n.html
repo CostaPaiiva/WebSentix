@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>⚖️ Comparação - {{ projeto }}</title>
     <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -17,6 +20,13 @@
         </div>
     {% endif %}
 
+    <!-- ================= GRÁFICO COMPARATIVO ================= -->
+    <div class="card">
+        <h2>📊 Gráfico Comparativo</h2>
+        <canvas id="graficoComparacao"></canvas>
+    </div>
+
+    <!-- ================= TABELA ================= -->
     <div class="card">
         <table class="tabela">
             <tr>
@@ -39,6 +49,37 @@
     <br>
     <a href="/timeline/{{ projeto }}" class="btn">⬅ Voltar para Timeline</a>
 </div>
+
+<!-- ================= SCRIPT DO GRÁFICO ================= -->
+<script>
+const resultados = {{ resultados | tojson }};
+
+const labels = resultados.map(r => r.versao);
+const scores = resultados.map(r => r.score);
+
+new Chart(document.getElementById("graficoComparacao"), {
+    type: "bar",
+    data: {
+        labels: labels,
+        datasets: [{
+            label: "Score",
+            data: scores,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
 
 </body>
 </html>
