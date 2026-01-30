@@ -1,0 +1,16 @@
+{
+    "melhor_modelo": "GradientBoosting",
+    "melhor_score": 0.8550665578373835,
+    "tipo_problema": "regressao",
+    "metricas_por_modelo": {
+        "RandomForest": 0.8367187707309325,
+        "ExtraTrees": 0.821726200812192,
+        "GradientBoosting": 0.8550665578373835,
+        "LinearRegression": 0.7459305254811328,
+        "Ridge": 0.7459395411307879,
+        "Lasso": 0.7459512222414171,
+        "SVR": -0.10255883513733174,
+        "KNN": 0.6826080781286608,
+        "DecisionTree": 0.6796485243192514
+    }
+}

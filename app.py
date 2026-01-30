@@ -506,50 +506,56 @@ def comparar_versoes(projeto, v1, v2):
     )
 
 # Define uma rota alternativa com versões pré-selecionadas
+@app.route("/comparar_duas/<projeto>")
 @app.route("/comparar_duas/<projeto>/<v1>/<v2>")
-# Define a função que lida com a requisição de comparação
 def comparar_duas(projeto, v1=None, v2=None):
-    import os  # Importa o módulo os para interagir com o sistema operacional
-    import json  # Importa o módulo json para trabalhar com dados JSON
+    import os, json
 
-    # Constrói o caminho completo para a pasta do projeto
     pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
-    # Constrói o caminho para a pasta de treinos do projeto
     pasta_treinos = os.path.join(pasta_projeto, "treinos")
 
-    versoes = sorted(os.listdir(pasta_treinos)) if os.path.exists(  # Lista e ordena as versões se a pasta de treinos existir
-        pasta_treinos) else []  # Caso contrário, retorna uma lista vazia
+    versoes = sorted(os.listdir(pasta_treinos)) if os.path.exists(pasta_treinos) else []
 
-    def carregar_meta(v):  # Define uma função auxiliar para carregar o meta.json de uma versão
-        # Constrói o caminho para o arquivo meta.json da versão
+    def carregar_meta(v):
         caminho = os.path.join(pasta_treinos, v, "meta.json")
-        if not os.path.exists(caminho):  # Verifica se o arquivo meta.json não existe
-            return None  # Se não existir, retorna None
-        # Abre o arquivo meta.json em modo de leitura
+        if not os.path.exists(caminho):
+            return None
         with open(caminho, "r", encoding="utf-8") as f:
-            return json.load(f)  # Carrega e retorna os dados JSON do arquivo
+            return json.load(f)
 
-    # Se não veio pela URL, tenta pegar pelo form
-    if v1 is None or v2 is None:
-        # Tenta obter as versões selecionadas a partir dos argumentos da requisição
-        selecionadas = request.args.getlist("versoes")
-        # Se exatamente duas versões foram selecionadas
-        if len(selecionadas) == 2:
-            # Atribui as versões a v1 e v2
-            v1, v2 = selecionadas
-        else:
-            # Se não houver duas versões selecionadas, renderiza a página de comparação com valores nulos
-            return render_template(
-                "comparar_grafico.html",
-                projeto=projeto,
-                versoes=versoes,
-                v1=None,
-                v2=None,
-                meta1=None,
-                meta2=None,
-                vencedora=None,
-                producao=obter_versao_producao(pasta_projeto)
-            )
+    # Se ainda não escolheu duas versões → só mostra a tela
+    if not v1 or not v2:
+        return render_template(
+            "comparar_grafico.html",
+            projeto=projeto,
+            versoes=versoes,
+            v1=None,
+            v2=None,
+            meta1=None,
+            meta2=None,
+            vencedora=None,
+            producao=obter_versao_producao(pasta_projeto)
+        )
+
+    # Se vieram duas versões, carrega os dados
+    meta1 = carregar_meta(v1)
+    meta2 = carregar_meta(v2)
+
+    vencedora = None
+    if meta1 and meta2:
+        vencedora = v1 if meta1["melhor_score"] > meta2["melhor_score"] else v2
+
+    return render_template(
+        "comparar_grafico.html",
+        projeto=projeto,
+        versoes=versoes,
+        v1=v1,
+        v2=v2,
+        meta1=meta1,
+        meta2=meta2,
+        vencedora=vencedora,
+        producao=obter_versao_producao(pasta_projeto)
+    )
 
     # Carrega os metadados da primeira versão
     meta1 = carregar_meta(v1)

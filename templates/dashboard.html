@@ -66,31 +66,42 @@
 
     </div>
 
-    <!-- ================= ÁREA DE BOTÕES ================= -->
-    <div class="dashboard-buttons">
-        <!-- BOTÃO TREINAR OUTRO MODELO -->
-        <a href="/" class="btn-treinar big-btn">
-            Treinar outro modelo
-        </a>
-        <!-- BOTÃO COMPARAR VERSÕES -->
-        <a href="/comparar_duas/{{ projeto }}" class="btn-comparar big-btn">
-            Comparar Versões
-        </a>
-        <!-- BOTÃO TIMELINE -->
-        <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
-            Ver Timeline / Histórico
-        </a>
-        {% if not em_producao %}
-        <a href="/marcar_producao/{{ projeto }}/{{ versao }}" class="btn-primary big-btn">
-            Marcar esta versão como produção
-        </a>
-        {% else %}
+<!-- ================= ÁREA DE BOTÕES ================= -->
+<div class="dashboard-buttons">
+
+    <!-- BOTÃO TREINAR OUTRO MODELO -->
+    <a href="/" class="btn-treinar big-btn">
+        Treinar outro modelo
+    </a>
+
+    <!-- BOTÃO TIMELINE -->
+    <a href="/timeline/{{ projeto }}" class="btn-timeline big-btn">
+        Ver Timeline / Histórico
+    </a>
+
+    <!-- BOTÃO COMPARAR VERSÕES -->
+    <a 
+        href="/timeline/{{ projeto }}"
+        class="btn-comparar big-btn"
+    >
+        ⚖️ Comparar Versões
+    </a>
+
+
+    {% if versao_producao == versao %}
         <div class="badge-producao">
             🟢 ESTA VERSÃO ESTÁ EM PRODUÇÃO
         </div>
-        {% endif %}
+    {% else %}
+        <a 
+            href="/marcar_producao/{{ projeto }}/{{ versao }}"
+            class="btn-primary big-btn"
+        >
+            Marcar esta versão como produção
+        </a>
+    {% endif %}
 
-    </div>
+</div>
 
 </div>
 

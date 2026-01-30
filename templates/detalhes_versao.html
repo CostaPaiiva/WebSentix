@@ -38,8 +38,7 @@
         {% elif versao_producao %}
             <a 
                 class="btn"
-                <a href="/comparar/{{ projeto }}/{{ producao }}/{{ v.versao }}">
-
+                href="/comparar/{{ projeto }}/{{ versao_producao }}/{{ versao }}"
             >
                 ⚖️ Comparar com Produção ({{ versao_producao }})
             </a>
@@ -63,7 +62,7 @@
 
     <!-- ================= MÉTRICAS ================= -->
     <div class="card">
-        <h2>Métricas por Modelo</h2>
+        <h2>📊 Métricas por Modelo</h2>
         <table class="tabela">
             <tr>
                 <th>Modelo</th>
@@ -83,6 +82,7 @@
         <img 
             src="/files/{{ projeto }}/{{ versao }}/ranking.png" 
             style="max-width:100%; border-radius:10px;"
+            alt="Ranking de modelos"
         >
     </div>
 
