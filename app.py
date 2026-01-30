@@ -2,8 +2,11 @@
 import io
 import os
 import json
+import matplotlib
+matplotlib.use("Agg")  # IMPORTANTE para Flask / PDF (sem interface gráfica)
+import matplotlib.pyplot as plt
 # Importa classes e estilos do ReportLab para geração de PDFs
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Image, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -73,109 +76,12 @@ def salvar_upload(file):  # Define a função salvar_upload que recebe um arquiv
     file.save(caminho)  # Salva o arquivo no caminho especificado
     return caminho  # Retorna o caminho onde o arquivo foi salvo
 
-@app.route("/exportar_comparacao_pdf/<projeto>")
-def exportar_comparacao_pdf(projeto):
-    versoes = request.args.getlist("versoes")
-
-    if len(versoes) < 2:
-        return "Selecione pelo menos 2 versões", 400
-
-    if len(versoes) > 10:
-        return "Máximo de 10 versões permitido", 400
-
-    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
-
-    resultados = []
-
-    for v in versoes:
-        caminho = os.path.join(pasta_treinos, v, "meta.json")
-        if not os.path.exists(caminho):
-            continue
-
-        with open(caminho, "r", encoding="utf-8") as f:
-            meta = json.load(f)
-
-        resultados.append({
-            "versao": v,
-            "modelo": meta.get("melhor_modelo"),
-            "score": meta.get("melhor_score", 0)
-        })
-
     resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
-
-    # ================= PDF =================
-    # Cria um buffer na memória para armazenar os dados binários do PDF sem salvar um arquivo físico
-    buffer = io.BytesIO()
-    # Configura o template do documento usando o buffer e define o tamanho da página como A4
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    # Carrega as folhas de estilo padrão do ReportLab (Title, Normal, etc.)
-    styles = getSampleStyleSheet()
-    # Inicializa a lista que guardará os objetos (Flowables) que comporão o PDF
-    elementos = []
-
-    # Adiciona um parágrafo de título formatado com a variável 'projeto'
-    elementos.append(Paragraph(
-        f"<b>Comparação de Versões – {projeto}</b>",
-        styles["Title"]
-    ))
-
-    # Adiciona um parágrafo indicando a melhor versão (índice 0 da lista resultados)
-    elementos.append(Paragraph(
-        f"<b>Melhor versão:</b> {resultados[0]['versao']} "
-        f"(Score: {resultados[0]['score']:.4f})",
-        styles["Normal"]
-    ))
-
-    # Adiciona um parágrafo apenas com uma quebra de linha para dar espaçamento
-    elementos.append(Paragraph("<br/>", styles["Normal"]))
-
-    # Cria a lista de listas que servirá de base para a tabela, começando pelo cabeçalho
-    tabela_dados = [["Rank", "Versão", "Modelo", "Score"]]
-
-    # Itera sobre os resultados para preencher as linhas da tabela
-    for i, r in enumerate(resultados, start=1):
-        # Adiciona os dados de cada versão formatando o score com 4 casas decimais
-        tabela_dados.append([
-            i,
-            r["versao"],
-            r["modelo"],
-            f"{r['score']:.4f}"
-        ])
-
-    # Transforma a lista de dados em um objeto de tabela do ReportLab
-    tabela = Table(tabela_dados)
-    # Define as regras visuais da tabela (cores, bordas e fontes)
-    tabela.setStyle(TableStyle([
-        # Fundo cinza claro para o cabeçalho (linha 0)
-        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-        # Grade (bordas) cinza em toda a tabela com espessura 1
-        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
-        # Fonte negrito apenas para o cabeçalho
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        # Fundo verde claro para a primeira linha de dados (o melhor resultado)
-        ("BACKGROUND", (0, 1), (-1, 1), colors.lightgreen),
-    ]))
-
-    # Adiciona a tabela finalizada à lista de elementos do documento
-    elementos.append(tabela)
-
-    # Constrói o PDF processando todos os elementos inseridos na lista
-    doc.build(elementos)
-    # Volta o ponteiro do buffer para o início para que a leitura comece do byte 0
-    buffer.seek(0)
-
-    # Retorna o arquivo para o navegador do usuário iniciar o download
-    return send_file(
-        buffer,
-        as_attachment=True,
-        download_name=f"comparacao_{projeto}.pdf",
-        mimetype="application/pdf"
-    )
-
 
 # =========================================================
 # ROTA PRINCIPAL - UPLOAD E TREINAMENTO
 # =========================================================
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -555,7 +461,8 @@ def salvar_comentario(projeto, versao):
 # Define a rota para comparar duas versões específicas de um projeto
 @app.route("/comparar/<projeto>/<v1>/<v2>")
 def comparar_versoes(projeto, v1, v2):
-    import os, json
+    import os
+    import json
 
     pasta_base = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
 
@@ -614,9 +521,124 @@ def comparar_versoes(projeto, v1, v2):
         scores=scores,
         resultados=resultados
     )
+
+@app.route("/exportar_comparacao_pdf/<projeto>")
+def exportar_comparacao_pdf(projeto):
+    versoes = request.args.getlist("versoes")
+
+    if len(versoes) < 2:
+        return "Selecione pelo menos 2 versões", 400
+
+    if len(versoes) > 10:
+        return "Máximo de 10 versões permitido", 400
+
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    resultados = []
+
+    for v in versoes:
+        caminho = os.path.join(pasta_treinos, v, "meta.json")
+        if not os.path.exists(caminho):
+            continue
+
+        with open(caminho, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+
+        resultados.append({
+            "versao": v,
+            "modelo": meta.get("melhor_modelo", "N/A"),
+            "score": meta.get("melhor_score", 0)
+        })
+
+    if len(resultados) < 2:
+        return "Não foi possível comparar as versões selecionadas", 400
+
+    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+
+    # ===============================
+    # 📊 GERA GRÁFICO
+    # ===============================
+    labels = [r["versao"] for r in resultados]
+    scores = [r["score"] for r in resultados]
+
+    plt.figure()
+    plt.bar(labels, scores)
+    plt.title("Comparação de Performance")
+    plt.xlabel("Versão")
+    plt.ylabel("Score")
+
+    img_buffer = io.BytesIO()
+    plt.savefig(img_buffer, format="png", bbox_inches="tight")
+    plt.close()
+    img_buffer.seek(0)
+
+    # ===============================
+    # 📄 PDF
+    # ===============================
+    pdf_buffer = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=A4,
+        rightMargin=40,
+        leftMargin=40,
+        topMargin=40,
+        bottomMargin=40
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph(f"<b>Projeto:</b> {projeto}", styles["Title"]))
+    elements.append(Spacer(1, 16))
+
+    # ===============================
+    # 📋 TABELA
+    # ===============================
+    tabela_dados = [["Versão", "Modelo", "Score"]]
+
+    for r in resultados:
+        tabela_dados.append([
+            r["versao"],
+            r["modelo"],
+            f'{r["score"]:.4f}'
+        ])
+
+    tabela = Table(tabela_dados, hAlign="LEFT")
+    tabela.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+        ("FONT", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("ALIGN", (2, 1), (2, -1), "RIGHT"),
+    ]))
+
+    elements.append(tabela)
+    elements.append(Spacer(1, 30))
+
+    # ===============================
+    # 📊 GRÁFICO NO PDF
+    # ===============================
+    elements.append(Paragraph("<b>Gráfico de Comparação</b>", styles["Heading2"]))
+    elements.append(Spacer(1, 12))
+
+    grafico = Image(img_buffer, width=400, height=250)
+    elements.append(grafico)
+
+    doc.build(elements)
+
+    pdf_buffer.seek(0)
+
+    return send_file(
+        pdf_buffer,
+        as_attachment=True,
+        download_name=f"comparacao_{projeto}.pdf",
+        mimetype="application/pdf"
+    )
+    
 @app.route("/comparar_n/<projeto>")
 def comparar_n(projeto):
-    import os, json
+    import os
+    import json
 
     pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
     pasta_treinos = os.path.join(pasta_projeto, "treinos")
@@ -655,15 +677,19 @@ def comparar_n(projeto):
     )
 
 # Define uma rota alternativa com versões pré-selecionadas
+
+
 @app.route("/comparar_duas/<projeto>")
 @app.route("/comparar_duas/<projeto>/<v1>/<v2>")
 def comparar_duas(projeto, v1=None, v2=None):
-    import os, json
+    import os
+    import json
 
     pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
     pasta_treinos = os.path.join(pasta_projeto, "treinos")
 
-    versoes = sorted(os.listdir(pasta_treinos)) if os.path.exists(pasta_treinos) else []
+    versoes = sorted(os.listdir(pasta_treinos)) if os.path.exists(
+        pasta_treinos) else []
 
     def carregar_meta(v):
         caminho = os.path.join(pasta_treinos, v, "meta.json")
@@ -912,15 +938,19 @@ def dashboard(projeto):
 
     resultados_dict = {}  # Formato final: { "Modelo": score }
 
-    with open(caminho_relatorio, encoding="utf-8") as f:  # Abre o arquivo de relatório para leitura
+    # Abre o arquivo de relatório para leitura
+    with open(caminho_relatorio, encoding="utf-8") as f:
         for linha in f:  # Itera sobre cada linha do arquivo
             # Só processa linhas no formato: Modelo: score
             if ":" in linha:  # Verifica se a linha contém um ":" para indicar um modelo e score
-                nome, score_txt = linha.split(":", 1)  # Divide a linha no primeiro ":" para obter o nome do modelo e o texto do score
+                # Divide a linha no primeiro ":" para obter o nome do modelo e o texto do score
+                nome, score_txt = linha.split(":", 1)
 
                 try:  # Inicia um bloco try para tratamento de erros ao converter o score
-                    score = float(score_txt.strip())  # Converte o texto do score para um número float e remove espaços
-                    resultados_dict[nome.strip()] = score  # Adiciona o nome do modelo (sem espaços) e o score ao dicionário de resultados
+                    # Converte o texto do score para um número float e remove espaços
+                    score = float(score_txt.strip())
+                    # Adiciona o nome do modelo (sem espaços) e o score ao dicionário de resultados
+                    resultados_dict[nome.strip()] = score
                 except:
                     # Ignora linhas que não são números
                     pass
@@ -959,8 +989,10 @@ def dashboard(projeto):
     # DECIDE SE USA O META.JSON OU O CÁLCULO AUTOMÁTICO
     # =====================================================
 
-    melhor_modelo = meta.get("melhor_modelo", melhor_modelo_auto) # Define o melhor modelo, priorizando meta.json ou o cálculo automático
-    melhor_score = meta.get("melhor_score", melhor_score_auto) # Define o melhor score, priorizando meta.json ou o cálculo automático
+    # Define o melhor modelo, priorizando meta.json ou o cálculo automático
+    melhor_modelo = meta.get("melhor_modelo", melhor_modelo_auto)
+    # Define o melhor score, priorizando meta.json ou o cálculo automático
+    melhor_score = meta.get("melhor_score", melhor_score_auto)
 
     # =====================================================
     # ORDENA RESULTADOS DO MELHOR PARA O PIOR (PARA RANKING)
@@ -983,7 +1015,6 @@ def dashboard(projeto):
     # Verifica se a última versão é a mesma que está em produção
     # O resultado será True ou False
     em_producao = (ultima_versao == versao_producao)
-
 
     # =====================================================
     # RENDERIZA O DASHBOARD
@@ -1047,6 +1078,8 @@ def baixar_pdf(projeto):
 # =========================================================
 
 # Define a rota "/prever" que aceita requisições GET e POST
+
+
 @app.route("/prever", methods=["GET", "POST"])
 def pagina_prever():
 
@@ -1089,6 +1122,8 @@ def pagina_prever():
 
 # Define uma rota Flask que recebe o nome do projeto pela URL
 # Exemplo: /versoes/meu_projeto
+
+
 @app.route("/versoes/<projeto>")
 def gerenciar_versoes(projeto):
 
@@ -1154,7 +1189,6 @@ if __name__ == "__main__":
     # Cria a pasta principal de projetos, caso ela não exista
     # exist_ok=True evita erro se a pasta já estiver criada
     os.makedirs(PROJECTS_FOLDER, exist_ok=True)
-
 
     # Inicia o servidor Flask em modo debug
     app.run(debug=True)
