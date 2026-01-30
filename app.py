@@ -1,3 +1,14 @@
+# Importa módulos padrão do Python para manipulação de I/O, sistema operacional e JSON
+import io
+import os
+import json
+# Importa classes e estilos do ReportLab para geração de PDFs
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+# Importa funcionalidades do Flask para lidar com requisições HTTP e envio de arquivos
+from flask import request, send_file
 from pdf_report import gerar_pdf             # Gera o relatório em PDF
 from predictor import prever                 # Faz previsões em novos dados
 from automl_engine import treinar_automl     # Treina os modelos automaticamente
@@ -62,10 +73,109 @@ def salvar_upload(file):  # Define a função salvar_upload que recebe um arquiv
     file.save(caminho)  # Salva o arquivo no caminho especificado
     return caminho  # Retorna o caminho onde o arquivo foi salvo
 
+@app.route("/exportar_comparacao_pdf/<projeto>")
+def exportar_comparacao_pdf(projeto):
+    versoes = request.args.getlist("versoes")
+
+    if len(versoes) < 2:
+        return "Selecione pelo menos 2 versões", 400
+
+    if len(versoes) > 10:
+        return "Máximo de 10 versões permitido", 400
+
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    resultados = []
+
+    for v in versoes:
+        caminho = os.path.join(pasta_treinos, v, "meta.json")
+        if not os.path.exists(caminho):
+            continue
+
+        with open(caminho, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+
+        resultados.append({
+            "versao": v,
+            "modelo": meta.get("melhor_modelo"),
+            "score": meta.get("melhor_score", 0)
+        })
+
+    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+
+    # ================= PDF =================
+    # Cria um buffer na memória para armazenar os dados binários do PDF sem salvar um arquivo físico
+    buffer = io.BytesIO()
+    # Configura o template do documento usando o buffer e define o tamanho da página como A4
+    doc = SimpleDocTemplate(buffer, pagesize=A4)
+    # Carrega as folhas de estilo padrão do ReportLab (Title, Normal, etc.)
+    styles = getSampleStyleSheet()
+    # Inicializa a lista que guardará os objetos (Flowables) que comporão o PDF
+    elementos = []
+
+    # Adiciona um parágrafo de título formatado com a variável 'projeto'
+    elementos.append(Paragraph(
+        f"<b>Comparação de Versões – {projeto}</b>",
+        styles["Title"]
+    ))
+
+    # Adiciona um parágrafo indicando a melhor versão (índice 0 da lista resultados)
+    elementos.append(Paragraph(
+        f"<b>Melhor versão:</b> {resultados[0]['versao']} "
+        f"(Score: {resultados[0]['score']:.4f})",
+        styles["Normal"]
+    ))
+
+    # Adiciona um parágrafo apenas com uma quebra de linha para dar espaçamento
+    elementos.append(Paragraph("<br/>", styles["Normal"]))
+
+    # Cria a lista de listas que servirá de base para a tabela, começando pelo cabeçalho
+    tabela_dados = [["Rank", "Versão", "Modelo", "Score"]]
+
+    # Itera sobre os resultados para preencher as linhas da tabela
+    for i, r in enumerate(resultados, start=1):
+        # Adiciona os dados de cada versão formatando o score com 4 casas decimais
+        tabela_dados.append([
+            i,
+            r["versao"],
+            r["modelo"],
+            f"{r['score']:.4f}"
+        ])
+
+    # Transforma a lista de dados em um objeto de tabela do ReportLab
+    tabela = Table(tabela_dados)
+    # Define as regras visuais da tabela (cores, bordas e fontes)
+    tabela.setStyle(TableStyle([
+        # Fundo cinza claro para o cabeçalho (linha 0)
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        # Grade (bordas) cinza em toda a tabela com espessura 1
+        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+        # Fonte negrito apenas para o cabeçalho
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        # Fundo verde claro para a primeira linha de dados (o melhor resultado)
+        ("BACKGROUND", (0, 1), (-1, 1), colors.lightgreen),
+    ]))
+
+    # Adiciona a tabela finalizada à lista de elementos do documento
+    elementos.append(tabela)
+
+    # Constrói o PDF processando todos os elementos inseridos na lista
+    doc.build(elementos)
+    # Volta o ponteiro do buffer para o início para que a leitura comece do byte 0
+    buffer.seek(0)
+
+    # Retorna o arquivo para o navegador do usuário iniciar o download
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=f"comparacao_{projeto}.pdf",
+        mimetype="application/pdf"
+    )
+
+
 # =========================================================
 # ROTA PRINCIPAL - UPLOAD E TREINAMENTO
 # =========================================================
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
