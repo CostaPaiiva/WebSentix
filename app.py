@@ -524,7 +524,13 @@ def comparar_versoes(projeto, v1, v2):
 
 @app.route("/exportar_comparacao_pdf/<projeto>")
 def exportar_comparacao_pdf(projeto):
-    
+    import os, json, io
+    import matplotlib.pyplot as plt
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+
     versoes = request.args.getlist("versoes")
 
     if len(versoes) < 2:
@@ -534,11 +540,10 @@ def exportar_comparacao_pdf(projeto):
         return "Máximo de 10 versões permitido", 400
 
     pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
-
     resultados = []
 
     # ===============================
-    # 📥 CARREGA METAS
+    # 📥 CARREGA METAS (SEM MÉTRICA FALSA)
     # ===============================
     for v in versoes:
         caminho = os.path.join(pasta_treinos, v, "meta.json")
@@ -551,28 +556,39 @@ def exportar_comparacao_pdf(projeto):
         resultados.append({
             "versao": v,
             "modelo": meta.get("melhor_modelo", "N/A"),
-            "score": meta.get("melhor_score", 0),
-            "acc": meta.get("acc", 0),
-            "f1": meta.get("f1", 0)
+            "score": meta.get("melhor_score"),
+            "acc": meta.get("acc"),   # pode ser None
+            "f1": meta.get("f1")      # pode ser None
         })
 
     if len(resultados) < 2:
         return "Não foi possível comparar as versões selecionadas", 400
 
-    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+    resultados = sorted(
+        resultados,
+        key=lambda x: x["score"] if x["score"] is not None else 0,
+        reverse=True
+    )
 
     # ===============================
-    # 📊 GERA GRÁFICO (Score x Acc x F1)
+    # 📊 GERA GRÁFICO (SÓ MÉTRICA VÁLIDA)
     # ===============================
     labels = [r["versao"] for r in resultados]
+
     scores = [r["score"] for r in resultados]
-    accs = [r["acc"] for r in resultados]
-    f1s = [r["f1"] for r in resultados]
+    accs   = [r["acc"] for r in resultados]
+    f1s    = [r["f1"] for r in resultados]
 
     plt.figure(figsize=(9, 4))
-    plt.plot(labels, scores, marker="o", label="Score")
-    plt.plot(labels, accs, marker="o", label="Accuracy")
-    plt.plot(labels, f1s, marker="o", label="F1-Score")
+
+    if any(s is not None for s in scores):
+        plt.plot(labels, scores, marker="o", label="Score")
+
+    if any(a is not None for a in accs):
+        plt.plot(labels, accs, marker="o", label="Accuracy")
+
+    if any(f is not None for f in f1s):
+        plt.plot(labels, f1s, marker="o", label="F1-Score")
 
     plt.title("Comparação de Métricas por Versão")
     plt.xlabel("Versão")
@@ -603,8 +619,9 @@ def exportar_comparacao_pdf(projeto):
     styles = getSampleStyleSheet()
     elements = []
 
-    # Título
-    elements.append(Paragraph(f"📊 Comparação de Modelos – <b>{projeto}</b>", styles["Title"]))
+    elements.append(
+        Paragraph(f"📊 Comparação de Modelos – <b>{projeto}</b>", styles["Title"])
+    )
     elements.append(Spacer(1, 16))
 
     # ===============================
@@ -616,9 +633,9 @@ def exportar_comparacao_pdf(projeto):
         tabela_dados.append([
             r["versao"],
             r["modelo"],
-            f'{r["score"]:.4f}',
-            f'{r["acc"]:.4f}',
-            f'{r["f1"]:.4f}',
+            f'{r["score"]:.4f}' if r["score"] is not None else "-",
+            f'{r["acc"]:.4f}' if r["acc"] is not None else "-",
+            f'{r["f1"]:.4f}' if r["f1"] is not None else "-"
         ])
 
     tabela = Table(tabela_dados, hAlign="LEFT")
@@ -635,12 +652,12 @@ def exportar_comparacao_pdf(projeto):
     # ===============================
     # 📈 GRÁFICO NO PDF
     # ===============================
-    elements.append(Paragraph("📈 Gráfico Comparativo (Score x Acc x F1)", styles["Heading2"]))
+    elements.append(
+        Paragraph("📈 Gráfico Comparativo (Score x Accuracy x F1)", styles["Heading2"])
+    )
     elements.append(Spacer(1, 12))
-
     elements.append(Image(img_buffer, width=440, height=220))
 
-    # Build
     doc.build(elements)
     pdf_buffer.seek(0)
 
@@ -650,53 +667,9 @@ def exportar_comparacao_pdf(projeto):
         download_name=f"comparacao_{projeto}.pdf",
         mimetype="application/pdf"
     )
-    
-@app.route("/comparar_n/<projeto>")
-def comparar_n(projeto):
-    import os
-    import json
 
-    pasta_projeto = os.path.join(PROJECTS_FOLDER, projeto)
-    pasta_treinos = os.path.join(pasta_projeto, "treinos")
-
-    if not os.path.exists(pasta_treinos):
-        return "Projeto não encontrado", 404
-
-    versoes_selecionadas = request.args.getlist("versoes")
-
-    if len(versoes_selecionadas) < 2:
-        return "Selecione pelo menos duas versões", 400
-
-    resultados = []
-
-    for v in versoes_selecionadas:
-        meta_path = os.path.join(pasta_treinos, v, "meta.json")
-        if os.path.exists(meta_path):
-            with open(meta_path, "r", encoding="utf-8") as f:
-                meta = json.load(f)
-                resultados.append({
-                    "versao": v,
-                    "modelo": meta.get("melhor_modelo", "N/A"),
-                    "score": meta.get("melhor_score", 0),
-                    "acc": meta.get("acc", 0),
-                    "f1": meta.get("f1", 0),
-                    "tipo": meta.get("tipo_problema", "")
-                })
-
-
-    # ranking
-    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
-    melhor = resultados[0] if resultados else None
-
-    return render_template(
-        "comparar_n.html",
-        projeto=projeto,
-        resultados=resultados,
-        melhor=melhor
-    )
 
 # Define uma rota alternativa com versões pré-selecionadas
-
 
 @app.route("/comparar_duas/<projeto>")
 @app.route("/comparar_duas/<projeto>/<v1>/<v2>")
@@ -1142,6 +1115,53 @@ def pagina_prever():
 # Define uma rota Flask que recebe o nome do projeto pela URL
 # Exemplo: /versoes/meu_projeto
 
+@app.route("/comparar_n/<projeto>")
+def comparar_n(projeto):
+    import os, json
+
+    versoes = request.args.getlist("versoes")
+
+    if len(versoes) < 2:
+        return "Selecione pelo menos 2 versões", 400
+
+    if len(versoes) > 10:
+        return "Máximo de 10 versões permitido", 400
+
+    pasta_treinos = os.path.join(PROJECTS_FOLDER, projeto, "treinos")
+
+    if not os.path.exists(pasta_treinos):
+        return "Projeto não encontrado", 404
+
+    resultados = []
+
+    for v in versoes:
+        meta_path = os.path.join(pasta_treinos, v, "meta.json")
+        if os.path.exists(meta_path):
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+
+            resultados.append({
+                "versao": v,
+                "modelo": meta.get("melhor_modelo", "N/A"),
+                "score": meta.get("melhor_score", 0),
+                "acc": meta.get("acc", None),
+                "f1": meta.get("f1", None),
+                "tipo": meta.get("tipo_problema", "")
+            })
+
+    if len(resultados) < 2:
+        return "Não foi possível comparar as versões", 400
+
+    # ranking
+    resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
+    melhor = resultados[0]
+
+    return render_template(
+        "comparar_n.html",
+        projeto=projeto,
+        resultados=resultados,
+        melhor=melhor
+    )
 
 @app.route("/versoes/<projeto>")
 def gerenciar_versoes(projeto):
