@@ -524,6 +524,7 @@ def comparar_versoes(projeto, v1, v2):
 
 @app.route("/exportar_comparacao_pdf/<projeto>")
 def exportar_comparacao_pdf(projeto):
+    
     versoes = request.args.getlist("versoes")
 
     if len(versoes) < 2:
@@ -536,6 +537,9 @@ def exportar_comparacao_pdf(projeto):
 
     resultados = []
 
+    # ===============================
+    # 📥 CARREGA METAS
+    # ===============================
     for v in versoes:
         caminho = os.path.join(pasta_treinos, v, "meta.json")
         if not os.path.exists(caminho):
@@ -547,7 +551,9 @@ def exportar_comparacao_pdf(projeto):
         resultados.append({
             "versao": v,
             "modelo": meta.get("melhor_modelo", "N/A"),
-            "score": meta.get("melhor_score", 0)
+            "score": meta.get("melhor_score", 0),
+            "acc": meta.get("acc", 0),
+            "f1": meta.get("f1", 0)
         })
 
     if len(resultados) < 2:
@@ -556,16 +562,24 @@ def exportar_comparacao_pdf(projeto):
     resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
 
     # ===============================
-    # 📊 GERA GRÁFICO
+    # 📊 GERA GRÁFICO (Score x Acc x F1)
     # ===============================
     labels = [r["versao"] for r in resultados]
     scores = [r["score"] for r in resultados]
+    accs = [r["acc"] for r in resultados]
+    f1s = [r["f1"] for r in resultados]
 
-    plt.figure()
-    plt.bar(labels, scores)
-    plt.title("Comparação de Performance")
+    plt.figure(figsize=(9, 4))
+    plt.plot(labels, scores, marker="o", label="Score")
+    plt.plot(labels, accs, marker="o", label="Accuracy")
+    plt.plot(labels, f1s, marker="o", label="F1-Score")
+
+    plt.title("Comparação de Métricas por Versão")
     plt.xlabel("Versão")
-    plt.ylabel("Score")
+    plt.ylabel("Valor")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
 
     img_buffer = io.BytesIO()
     plt.savefig(img_buffer, format="png", bbox_inches="tight")
@@ -573,7 +587,7 @@ def exportar_comparacao_pdf(projeto):
     img_buffer.seek(0)
 
     # ===============================
-    # 📄 PDF
+    # 📄 MONTA PDF
     # ===============================
     pdf_buffer = io.BytesIO()
 
@@ -589,19 +603,22 @@ def exportar_comparacao_pdf(projeto):
     styles = getSampleStyleSheet()
     elements = []
 
-    elements.append(Paragraph(f"<b>Projeto:</b> {projeto}", styles["Title"]))
+    # Título
+    elements.append(Paragraph(f"📊 Comparação de Modelos – <b>{projeto}</b>", styles["Title"]))
     elements.append(Spacer(1, 16))
 
     # ===============================
     # 📋 TABELA
     # ===============================
-    tabela_dados = [["Versão", "Modelo", "Score"]]
+    tabela_dados = [["Versão", "Modelo", "Score", "Acc", "F1"]]
 
     for r in resultados:
         tabela_dados.append([
             r["versao"],
             r["modelo"],
-            f'{r["score"]:.4f}'
+            f'{r["score"]:.4f}',
+            f'{r["acc"]:.4f}',
+            f'{r["f1"]:.4f}',
         ])
 
     tabela = Table(tabela_dados, hAlign="LEFT")
@@ -609,23 +626,22 @@ def exportar_comparacao_pdf(projeto):
         ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
         ("GRID", (0, 0), (-1, -1), 1, colors.grey),
         ("FONT", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("ALIGN", (2, 1), (2, -1), "RIGHT"),
+        ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
     ]))
 
     elements.append(tabela)
     elements.append(Spacer(1, 30))
 
     # ===============================
-    # 📊 GRÁFICO NO PDF
+    # 📈 GRÁFICO NO PDF
     # ===============================
-    elements.append(Paragraph("<b>Gráfico de Comparação</b>", styles["Heading2"]))
+    elements.append(Paragraph("📈 Gráfico Comparativo (Score x Acc x F1)", styles["Heading2"]))
     elements.append(Spacer(1, 12))
 
-    grafico = Image(img_buffer, width=400, height=250)
-    elements.append(grafico)
+    elements.append(Image(img_buffer, width=440, height=220))
 
+    # Build
     doc.build(elements)
-
     pdf_buffer.seek(0)
 
     return send_file(
@@ -660,10 +676,13 @@ def comparar_n(projeto):
                 meta = json.load(f)
                 resultados.append({
                     "versao": v,
+                    "modelo": meta.get("melhor_modelo", "N/A"),
                     "score": meta.get("melhor_score", 0),
-                    "modelo": meta.get("melhor_modelo", ""),
+                    "acc": meta.get("acc", 0),
+                    "f1": meta.get("f1", 0),
                     "tipo": meta.get("tipo_problema", "")
                 })
+
 
     # ranking
     resultados = sorted(resultados, key=lambda x: x["score"], reverse=True)
