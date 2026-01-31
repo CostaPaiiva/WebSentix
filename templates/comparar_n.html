@@ -16,7 +16,7 @@
     {% if melhor %}
         <div class="card destaque">
             🏆 <b>Melhor versão:</b> {{ melhor.versao }}
-            (Score: {{ "%.4f"|format(melhor.score) }})
+            ({{ "%.4f"|format(melhor.score) }})
         </div>
     {% endif %}
 
@@ -40,25 +40,46 @@
     <!-- ================= TABELA ================= -->
     <div class="card">
         <table class="tabela">
-            <tr>
-                <th>Rank</th>
-                <th>Versão</th>
-                <th>Modelo</th>
-                <th>Score</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Versão</th>
+                    <th>Modelo</th>
+                    {% if resultados[0].task == "classification" %}
+                        <th>Accuracy</th>
+                        <th>F1</th>
+                    {% elif resultados[0].task == "regression" %}
+                        <th>RMSE</th>
+                        <th>R²</th>
+                    {% else %}
+                        <th>Score</th>
+                    {% endif %}
+                </tr>
+            </thead>
 
+            <tbody>
             {% for r in resultados %}
-            <tr {% if loop.first %}style="font-weight:bold; background:#170a32;"{% endif %}>
-                <td>{{ loop.index }}</td>
-                <td>{{ r.versao }}</td>
-                <td>{{ r.modelo }}</td>
-                <td>{{ "%.4f"|format(r.score) }}</td>
-            </tr>
+                <tr {% if loop.first %}style="font-weight:bold; background:#170a32;"{% endif %}>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r.versao }}</td>
+                    <td>{{ r.modelo }}</td>
+
+                    {% if r.task == "classification" %}
+                        <td>{{ "%.4f"|format(r.acc) if r.acc is not none else "-" }}</td>
+                        <td>{{ "%.4f"|format(r.f1) if r.f1 is not none else "-" }}</td>
+
+                    {% elif r.task == "regression" %}
+                        <td>{{ "%.4f"|format(r.rmse) if r.rmse is not none else "-" }}</td>
+                        <td>{{ "%.4f"|format(r.r2) if r.r2 is not none else "-" }}</td>
+
+                    {% else %}
+                        <td>{{ "%.4f"|format(r.score) }}</td>
+                    {% endif %}
+                </tr>
             {% endfor %}
+            </tbody>
         </table>
     </div>
-
-    <br>
 
     <div style="text-align:center; margin:20px 0;">
         <a href="/timeline/{{ projeto }}" class="btn">
@@ -81,39 +102,63 @@
 <!-- ================= SCRIPT ================= -->
 <script>
 const resultados = {{ resultados | tojson }};
-
 const labels = resultados.map(r => r.versao);
-const scores = resultados.map(r => r.score);
 
-// tenta descobrir a métrica pelo contexto
+// ===============================
+// 🧠 DETECÇÃO AUTOMÁTICA DE MÉTRICA
+// ===============================
+let metrica = "score";
 let labelGrafico = "Score";
 
-if (resultados.length > 0 && resultados[0].task) {
+if (resultados.length && resultados[0].task) {
+
     if (resultados[0].task === "classification") {
-        labelGrafico = "Score (Classificação)";
-    } else if (resultados[0].task === "regressão" || resultados[0].task === "regression") {
-        labelGrafico = "Score (Regressão)";
+        metrica = "acc";
+        labelGrafico = "Accuracy";
+    }
+
+    if (resultados[0].task === "regression") {
+        metrica = "rmse";
+        labelGrafico = "RMSE";
     }
 }
 
+const valores = resultados.map(r => r[metrica]);
+
+// ===============================
+// 📊 GRÁFICO
+// ===============================
 new Chart(document.getElementById("graficoComparacao"), {
     type: "bar",
     data: {
         labels: labels,
         datasets: [{
             label: labelGrafico,
-            data: scores,
+            data: valores,
             borderWidth: 1
         }]
     },
     options: {
         responsive: true,
         plugins: {
-            legend: { display: true }
+            legend: { display: true },
+            tooltip: {
+                callbacks: {
+                    label: function(ctx) {
+                        return ctx.dataset.label + ": " + ctx.parsed.y.toFixed(4);
+                    }
+                }
+            }
         },
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: true,
+                ticks: {
+                    // 🚫 remove notação científica
+                    callback: function(value) {
+                        return value.toFixed(4);
+                    }
+                }
             }
         }
     }
