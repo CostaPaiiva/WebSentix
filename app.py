@@ -558,7 +558,9 @@ def exportar_comparacao_pdf(projeto):
             "modelo": meta.get("melhor_modelo", "N/A"),
             "score": meta.get("melhor_score"),
             "acc": meta.get("acc"),   # pode ser None
-            "f1": meta.get("f1")      # pode ser None
+            "f1": meta.get("f1"),    # pode ser None
+            "rmse": meta.get("rmse"),
+            "r2": meta.get("r2")
         })
 
     if len(resultados) < 2:
@@ -575,22 +577,38 @@ def exportar_comparacao_pdf(projeto):
     # ===============================
     labels = [r["versao"] for r in resultados]
 
+    task = resultados[0].get("task")
+
     scores = [r["score"] for r in resultados]
     accs   = [r["acc"] for r in resultados]
     f1s    = [r["f1"] for r in resultados]
+    rmses  = [r["rmse"] for r in resultados]
+    r2s    = [r["r2"] for r in resultados]
 
     plt.figure(figsize=(9, 4))
 
     if any(s is not None for s in scores):
         plt.plot(labels, scores, marker="o", label="Score")
 
-    if any(a is not None for a in accs):
-        plt.plot(labels, accs, marker="o", label="Accuracy")
+    if task == "classification":
+        if any(a is not None for a in accs):
+            plt.plot(labels, accs, marker="o", label="Accuracy")
 
-    if any(f is not None for f in f1s):
-        plt.plot(labels, f1s, marker="o", label="F1-Score")
+        if any(f is not None for f in f1s):
+            plt.plot(labels, f1s, marker="o", label="F1-Score")
 
-    plt.title("Comparação de Métricas por Versão")
+    elif task == "regression":
+        if any(r is not None for r in rmses):
+            plt.plot(labels, rmses, marker="o", label="RMSE")
+
+        if any(r2 is not None for r2 in r2s):
+            plt.plot(labels, r2s, marker="o", label="R²")
+
+
+    if task == "classification":
+        plt.title("Comparação de Métricas – Classificação")
+    else:
+        plt.title("Comparação de Métricas – Regressão")
     plt.xlabel("Versão")
     plt.ylabel("Valor")
     plt.legend()
@@ -627,16 +645,31 @@ def exportar_comparacao_pdf(projeto):
     # ===============================
     # 📋 TABELA
     # ===============================
-    tabela_dados = [["Versão", "Modelo", "Score", "Acc", "F1"]]
+    task = resultados[0].get("task")
+
+    if task == "regression":
+        tabela_dados = [["Versão", "Modelo", "Score", "RMSE", "R²"]]
+    else:
+        tabela_dados = [["Versão", "Modelo", "Score", "Acc", "F1"]]
+
 
     for r in resultados:
-        tabela_dados.append([
-            r["versao"],
-            r["modelo"],
-            f'{r["score"]:.4f}' if r["score"] is not None else "-",
-            f'{r["acc"]:.4f}' if r["acc"] is not None else "-",
-            f'{r["f1"]:.4f}' if r["f1"] is not None else "-"
-        ])
+        if task == "regression":
+            tabela_dados.append([
+                r["versao"],
+                r["modelo"],
+                f'{r["score"]:.4f}' if r["score"] is not None else "-",
+                f'{r["rmse"]:.4f}' if r["rmse"] is not None else "-",
+                f'{r["r2"]:.4f}' if r["r2"] is not None else "-"
+            ])
+        else:
+            tabela_dados.append([
+                r["versao"],
+                r["modelo"],
+                f'{r["score"]:.4f}' if r["score"] is not None else "-",
+                f'{r["acc"]:.4f}' if r["acc"] is not None else "-",
+                f'{r["f1"]:.4f}' if r["f1"] is not None else "-"
+            ])
 
     tabela = Table(tabela_dados, hAlign="LEFT")
     tabela.setStyle(TableStyle([

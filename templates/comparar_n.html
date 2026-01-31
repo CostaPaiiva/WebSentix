@@ -10,6 +10,7 @@
 </head>
 <body>
 <div class="container">
+
     <h1 class="title">⚖️ Comparação de Versões – {{ projeto }}</h1>
 
     {% if melhor %}
@@ -19,7 +20,18 @@
         </div>
     {% endif %}
 
-    <!-- ================= GRÁFICO COMPARATIVO ================= -->
+    <!-- 🏷️ TASK DETECTADA -->
+    {% if resultados and resultados[0].task %}
+        <div class="card" style="text-align:center;">
+            {% if resultados[0].task == "classification" %}
+                🧠 <b>Tipo:</b> Classificação
+            {% elif resultados[0].task == "regression" %}
+                📈 <b>Tipo:</b> Regressão
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- ================= GRÁFICO ================= -->
     <div class="card">
         <h2>📊 Gráfico Comparativo</h2>
         <canvas id="graficoComparacao"></canvas>
@@ -34,6 +46,7 @@
                 <th>Modelo</th>
                 <th>Score</th>
             </tr>
+
             {% for r in resultados %}
             <tr {% if loop.first %}style="font-weight:bold; background:#170a32;"{% endif %}>
                 <td>{{ loop.index }}</td>
@@ -46,31 +59,49 @@
     </div>
 
     <br>
+
     <div style="text-align:center; margin:20px 0;">
-    <a href="/timeline/{{ projeto }}" class="btn">⬅ Voltar para Timeline</a>
+        <a href="/timeline/{{ projeto }}" class="btn">
+            ⬅ Voltar para Timeline
+        </a>
+    </div>
+
     <div style="text-align:center; margin:20px 0;">
-    <a 
-        class="btn btn-success"
-        href="/exportar_comparacao_pdf/{{ projeto }}?{% for r in resultados %}versoes={{ r.versao }}&{% endfor %}"
-        target="_blank"
-    >
-        📄 Exportar comparação em PDF
-    </a>
+        <a
+            class="btn btn-success"
+            href="/exportar_comparacao_pdf/{{ projeto }}?{% for r in resultados %}versoes={{ r.versao }}&{% endfor %}"
+            target="_blank"
+        >
+            📄 Exportar comparação em PDF
+        </a>
+    </div>
+
 </div>
 
-<!-- ================= SCRIPT DO GRÁFICO ================= -->
+<!-- ================= SCRIPT ================= -->
 <script>
 const resultados = {{ resultados | tojson }};
 
 const labels = resultados.map(r => r.versao);
 const scores = resultados.map(r => r.score);
 
+// tenta descobrir a métrica pelo contexto
+let labelGrafico = "Score";
+
+if (resultados.length > 0 && resultados[0].task) {
+    if (resultados[0].task === "classification") {
+        labelGrafico = "Score (Classificação)";
+    } else if (resultados[0].task === "regressão" || resultados[0].task === "regression") {
+        labelGrafico = "Score (Regressão)";
+    }
+}
+
 new Chart(document.getElementById("graficoComparacao"), {
     type: "bar",
     data: {
         labels: labels,
         datasets: [{
-            label: "Score",
+            label: labelGrafico,
             data: scores,
             borderWidth: 1
         }]
@@ -78,7 +109,7 @@ new Chart(document.getElementById("graficoComparacao"), {
     options: {
         responsive: true,
         plugins: {
-            legend: { display: false }
+            legend: { display: true }
         },
         scales: {
             y: {
@@ -89,7 +120,5 @@ new Chart(document.getElementById("graficoComparacao"), {
 });
 </script>
 
-</div>
-</div>
 </body>
 </html>
