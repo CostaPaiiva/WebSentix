@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -34,9 +34,9 @@
                 <!-- ✅ CHECKBOX -->
                 <div style="text-align:right;">
                     <label style="cursor:pointer;">
-                        <input 
-                            type="checkbox" 
-                            class="chk-comparar" 
+                        <input
+                            type="checkbox"
+                            class="chk-comparar"
                             value="{{ item.versao }}"
                         >
                         Comparar
@@ -49,36 +49,78 @@
                     <div class="data">📅 {{ item.data }}</div>
                 {% endif %}
 
+                <!-- 🏷️ BADGE DE TASK -->
+                {% if item.task %}
+                    <div class="task-badge {{ item.task }}">
+                        {% if item.task == "classification" %}
+                            🧠 Classificação
+                        {% elif item.task == "regression" %}
+                            📈 Regressão
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 {% if item.comentario %}
                     <div class="comentario-container">
                         <p class="comentario">💬 {{ item.comentario }}</p>
                     </div>
                 {% endif %}
 
-                {% if item.melhor_modelo or item.melhor_score or item.acc or item.f1 %}
+                <!-- 📊 MÉTRICAS INTELIGENTES -->
                 <div class="metricas">
 
                     {% if item.melhor_modelo %}
-                        <p>🏆 <b>Modelo:</b> <span class="modelo">{{ item.melhor_modelo }}</span></p>
+                        <p>🏆 <b>Modelo:</b>
+                            <span class="modelo">{{ item.melhor_modelo }}</span>
+                        </p>
                     {% endif %}
 
                     {% if item.melhor_score is not none %}
-                        <p>📈 <b>Score:</b> <span class="score">{{ "%.4f"|format(item.melhor_score) }}</span></p>
+                        <p>📈 <b>Score:</b>
+                            <span class="score">{{ "%.4f"|format(item.melhor_score) }}</span>
+                        </p>
                     {% endif %}
 
-                    {% if item.acc is not none %}
-                        <p>🎯 <b>Acc:</b> <span class="metrica">{{ "%.4f"|format(item.acc) }}</span></p>
+                    {% if item.task == "classification" %}
+                        {% if item.acc is not none %}
+                            <p>🎯 <b>Acc:</b>
+                                <span class="metrica">{{ "%.4f"|format(item.acc) }}</span>
+                            </p>
+                        {% endif %}
+
+                        {% if item.f1 is not none %}
+                            <p>⚖️ <b>F1:</b>
+                                <span class="metrica">{{ "%.4f"|format(item.f1) }}</span>
+                            </p>
+                        {% endif %}
                     {% endif %}
 
-                    {% if item.f1 is not none %}
-                        <p>🧪 <b>F1:</b> <span class="metrica">{{ "%.4f"|format(item.f1) }}</span></p>
+                    {% if item.task == "regression" %}
+                        {% if item.rmse is not none %}
+                            <p>📉 <b>RMSE:</b>
+                                <span class="metrica">{{ "%.4f"|format(item.rmse) }}</span>
+                            </p>
+                        {% endif %}
+
+                        {% if item.mae is not none %}
+                            <p>📐 <b>MAE:</b>
+                                <span class="metrica">{{ "%.4f"|format(item.mae) }}</span>
+                            </p>
+                        {% endif %}
+
+                        {% if item.r2 is not none %}
+                            <p>📊 <b>R²:</b>
+                                <span class="metrica">{{ "%.4f"|format(item.r2) }}</span>
+                            </p>
+                        {% endif %}
                     {% endif %}
 
                 </div>
-                {% endif %}
 
                 <div class="acoes">
-                    <a class="btn" href="/ver_detalhes/{{ projeto }}/{{ item.versao }}">🔍 Ver detalhes</a>
+                    <a class="btn" href="/ver_detalhes/{{ projeto }}/{{ item.versao }}">
+                        🔍 Ver detalhes
+                    </a>
 
                     <a class="btn" href="/editar_comentario/{{ projeto }}/{{ item.versao }}">
                         ✏️ Comentário
@@ -103,7 +145,7 @@
     <a class="btn-secondary" href="/dashboard/{{ projeto }}">⬅ Voltar</a>
 </div>
 
-<!-- 🧠 SCRIPT (AGORA SUPORTA N VERSÕES) -->
+<!-- 🧠 SCRIPT (SUPORTA N VERSÕES) -->
 <script>
 function compararSelecionadas() {
     const checks = document.querySelectorAll(".chk-comparar:checked");
@@ -119,8 +161,8 @@ function compararSelecionadas() {
     }
 
     const projeto = "{{ projeto }}";
-
     let query = "";
+
     checks.forEach(chk => {
         query += `versoes=${chk.value}&`;
     });
@@ -128,7 +170,6 @@ function compararSelecionadas() {
     window.location.href = `/comparar_n/${projeto}?${query}`;
 }
 </script>
-
 
 </body>
 </html>
