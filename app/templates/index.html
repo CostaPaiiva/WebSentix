@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}WebSentix{% endblock %}
+
+{% block content %}
+<div class="grid-main">
+    <section class="panel panel-large">
+        {% include "partials/form.html" %}
+    </section>
+
+    <aside class="panel">
+        {% include "partials/history.html" %}
+    </aside>
+</div>
+
+{% if error %}
+<section class="panel error-panel">
+    <h3>Erro</h3>
+    <p>{{ error }}</p>
+</section>
+{% endif %}
+
+{% if result %}
+<section class="panel result-panel">
+    {% include "partials/result.html" %}
+</section>
+{% endif %}
+{% endblock %}

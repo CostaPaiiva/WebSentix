@@ -1,0 +1,82 @@
+<h2>Resultado da análise</h2>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <span>Sentimento</span>
+        <strong>{{ result.sentiment|upper }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Confiança</span>
+        <strong>{{ "%.2f%%"|format(result.confidence * 100) }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Polaridade</span>
+        <strong>{{ "%+.3f"|format(result.polarity) }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Tempo</span>
+        <strong>{{ result.processing_time_ms }} ms</strong>
+    </div>
+    <div class="metric-card">
+        <span>Caracteres</span>
+        <strong>{{ result.text_length_chars }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Palavras</span>
+        <strong>{{ result.text_length_words }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Sentenças</span>
+        <strong>{{ result.sentence_count }}</strong>
+    </div>
+    <div class="metric-card">
+        <span>Origem</span>
+        <strong>{{ result.source_type }}</strong>
+    </div>
+</div>
+
+<div class="result-layout">
+    <div>
+        <h3>Resumo</h3>
+        <p>{{ result.summary }}</p>
+
+        <h3>Palavras-chave</h3>
+        <div class="tags">
+            {% for item in result.keywords %}
+            <span class="tag">{{ item.keyword }} ({{ "%.2f"|format(item.score) }})</span>
+            {% endfor %}
+        </div>
+
+        <h3>Texto processado</h3>
+        <div class="text-box">{{ result.cleaned_text }}</div>
+    </div>
+
+    <div>
+        <h3>Distribuição</h3>
+        <ul class="distribution-list">
+            {% for label, score in result.distribution.items() %}
+            <li>
+                <span>{{ label }}</span>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: {{ (score * 100)|round(1) }}%;"></div>
+                </div>
+                <strong>{{ "%.2f%%"|format(score * 100) }}</strong>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <h3>Exportação</h3>
+        <div class="export-actions">
+            <a class="btn btn-primary" href="/exports/latest/pdf">Baixar PDF</a>
+            <a class="btn btn-secondary" href="/exports/latest/txt">Baixar TXT</a>
+            <a class="btn btn-secondary" href="/exports/latest/excel">Baixar Excel</a>
+        </div>
+
+        <h3>Metadados</h3>
+        <div class="meta-box">
+            <p><strong>Data:</strong> {{ result.analyzed_at }}</p>
+            <p><strong>Origem:</strong> {{ result.source_value }}</p>
+            <p><strong>Modelo:</strong> {{ result.model_name }}</p>
+        </div>
+    </div>
+</div>

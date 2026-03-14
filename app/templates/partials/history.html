@@ -1,0 +1,19 @@
+<h2>Histórico</h2>
+<p class="muted">Últimas análises realizadas localmente.</p>
+
+{% if history %}
+<div class="history-list">
+    {% for item in history %}
+    <div class="history-card">
+        <div class="history-header">
+            <strong>{{ item.sentiment|upper }}</strong>
+            <span>{{ "%.2f%%"|format(item.confidence * 100) }}</span>
+        </div>
+        <p class="muted small">{{ item.source_type }} · {{ item.source_value }}</p>
+        <p class="muted small">{{ item.analyzed_at }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="muted">Nenhuma análise salva ainda.</p>
+{% endif %}

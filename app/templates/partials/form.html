@@ -1,0 +1,38 @@
+<h2>Nova análise</h2>
+<p class="muted">Escolha a origem do conteúdo e execute a análise de sentimentos.</p>
+
+<form id="analysis-form" action="/api/analyze" method="post" enctype="multipart/form-data">
+    <div class="tabs">
+        <button type="button" class="tab-btn {% if active_mode == 'text' %}active{% endif %}" data-mode="text">Texto</button>
+        <button type="button" class="tab-btn {% if active_mode == 'url' %}active{% endif %}" data-mode="url">URL</button>
+        <button type="button" class="tab-btn {% if active_mode == 'file' %}active{% endif %}" data-mode="file">Arquivo</button>
+    </div>
+
+    <input type="hidden" name="input_type" id="input_type" value="{{ active_mode or 'text' }}">
+
+    <div id="panel-text" class="mode-panel {% if active_mode == 'text' %}active{% endif %}">
+        <label for="text_value">Texto manual</label>
+        <textarea id="text_value" name="text_value" rows="10" placeholder="Cole aqui um texto em português..."></textarea>
+    </div>
+
+    <div id="panel-url" class="mode-panel {% if active_mode == 'url' %}active{% endif %}">
+        <label for="url_value">URL</label>
+        <input id="url_value" type="text" name="url_value" placeholder="https://exemplo.com/noticia">
+    </div>
+
+    <div id="panel-file" class="mode-panel {% if active_mode == 'file' %}active{% endif %}">
+        <label for="file_value">Arquivo</label>
+        <input id="file_value" type="file" name="file_value" accept=".txt,.pdf,.docx">
+        <small class="muted">Formatos aceitos: .txt, .pdf, .docx</small>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Iniciar análise</button>
+        <button type="reset" class="btn btn-secondary">Limpar</button>
+    </div>
+
+    <div id="loading-indicator" class="loading hidden">
+        <div class="spinner"></div>
+        <span>Processando conteúdo...</span>
+    </div>
+</form>
