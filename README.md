@@ -98,6 +98,7 @@ websentix/
 ├── requirements.txt
 ├── Dockerfile
 └── run.py
+
 Arquitetura por camadas
 
 routers/: define rotas HTTP, páginas, endpoints de análise e exportação
@@ -112,25 +113,29 @@ templates/ e static/: responsáveis pela interface web
 
 config/: centraliza configurações baseadas em ambiente
 
-Instalação
+Instalação:
+
 1. Criar ambiente virtual
 Linux/macOS
 python -m venv .venv
 source .venv/bin/activate
+
 Windows
 python -m venv .venv
-.venv\Scripts\activate
+source .venv\Scripts\activate
 
 2. Instalar dependências
 pip install --upgrade pip
 pip install -r requirements.txt
 
-3. Configurar variáveis de ambiente
+3. Configurar variáveis de ambiente:
 Linux/macOS
 cp .env.example .env
-Windows
+
+Windows:
 copy .env.example .env
-Como executar o projeto
+
+Como executar o projeto:
 Rodando localmente
 python run.py
 
@@ -144,10 +149,14 @@ http://127.0.0.1:8000
 Rodando com Docker
 docker build -t websentix .
 docker run -p 8000:8000 websentix
+
 Executando os testes
 pytest -q
+
 Endpoints principais
+
 Método	Endpoint	Descrição
+
 GET	/	Interface principal
 POST	/api/analyze	Análise via formulário
 POST	/api/analyze/json	Retorno da análise em JSON
