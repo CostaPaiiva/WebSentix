@@ -33,4 +33,6 @@ def test_analyze_text_returns_expected_keys():  # Testa se analyze_text retorna 
     )
 
     assert result["sentiment"] == "positivo"  # Verifica se o sentimento detectado é positivo
-    assert "summary" in result               
+    assert "summary" in result                # Verifica se o resumo está presente no resultado
+    assert "distribution" in result           # Verifica se a distribuição de sentimentos está presente
+    assert result["text_length_words"] > 0    # Verifica se o tamanho do texto em palavras foi calculado
