@@ -120,9 +120,11 @@ source .venv/bin/activate
 Windows
 python -m venv .venv
 .venv\Scripts\activate
+
 2. Instalar dependências
 pip install --upgrade pip
 pip install -r requirements.txt
+
 3. Configurar variáveis de ambiente
 Linux/macOS
 cp .env.example .env
@@ -195,7 +197,7 @@ exemplos de entrada e saída
 
 Objetivo do projeto
 
-O WebSentix foi criado para servir como uma base prática e extensível para aplicações de análise textual em português, reunindo processamento de linguagem natural, leitura de múltiplas fontes e exportação de resultados em uma interface simples e funcional.
+O WebSentix foi criado para fins de estudo e servir como uma base prática e extensível para aplicações de análise textual em português, reunindo processamento de linguagem natural, leitura de múltiplas fontes e exportação de resultados em uma interface simples e funcional.
 
 Licença
 
