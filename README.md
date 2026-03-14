@@ -1,68 +1,87 @@
-O **WebSentix** é uma aplicação web baseada em **FastAPI** para análise de sentimento a partir de textos, URLs e arquivos enviados, com recursos de resumo, extração de palavras-chave, histórico e exportação.
+# WebSentix
 
-## Visão Geral
+<p align="center">
+  <strong>Análise de sentimento em português a partir de texto, URLs e arquivos</strong>
+</p>
 
-O **WebSentix** é uma aplicação web em Python, orientada para produção, projetada para analisar sentimentos a partir de diferentes fontes de conteúdo:
+<p align="center">
+  Aplicação web desenvolvida com FastAPI para analisar sentimentos, extrair palavras-chave, gerar resumos e exportar resultados.
+</p>
 
-- entrada manual de texto
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.10%2B-blue">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Web%20Framework-009688">
+  <img alt="Status" src="https://img.shields.io/badge/status-em%20desenvolvimento-orange">
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+---
+
+## Sobre o projeto
+
+O **WebSentix** é uma aplicação web orientada para análise de sentimento em **português**, construída com **FastAPI**, capaz de processar conteúdo vindo de diferentes fontes:
+
+- texto digitado manualmente
 - URLs públicas
-- arquivos enviados nos formatos `.txt`, `.pdf` e `.docx`
+- arquivos enviados em `.txt`, `.pdf` e `.docx`
 
-A plataforma processa e limpa o conteúdo, realiza análise de sentimento em português, gera um resumo leve, extrai palavras-chave, armazena um histórico local e permite exportações em PDF, TXT e Excel.
+A plataforma realiza o processamento e limpeza do conteúdo, aplica análise de sentimento, gera um resumo extrativo, extrai palavras-chave relevantes, salva o histórico localmente e permite exportar resultados em **PDF**, **TXT** e **Excel**.
 
 ## Funcionalidades
 
-- Análise de sentimento a partir de texto, URL ou upload de arquivo
-- Pipeline de PLN amigável para português
-- Classificação de sentimento: **positivo**, **negativo** e **neutro**
-- Pontuação de confiança e polaridade
+- Análise de sentimento a partir de:
+  - texto manual
+  - URL pública
+  - upload de arquivos
+- Classificação de sentimento em:
+  - **Positivo**
+  - **Negativo**
+  - **Neutro**
+- Score de confiança e polaridade
 - Extração automática de palavras-chave
 - Resumo extrativo
-- Suporte a upload de arquivos `.txt`, `.pdf`, `.docx`
-- Armazenamento de histórico local
-- Exportação de resultados em **PDF**, **TXT** e **Excel**
-- Exportação do histórico em **Excel**
-- Frontend responsivo renderizado no servidor com **FastAPI + Jinja2**
+- Suporte para arquivos `.txt`, `.pdf` e `.docx`
+- Histórico local de análises
+- Exportação do resultado em:
+  - PDF
+  - TXT
+  - Excel
+- Exportação do histórico em Excel
+- Interface responsiva renderizada no servidor com **FastAPI + Jinja2**
 
-## Stack Tecnológica
+## Tecnologias utilizadas
 
 ### Backend
-
 - FastAPI
 - Uvicorn
 - Pydantic
 
 ### Frontend
-
 - Jinja2
 - HTML5
 - CSS3
 - JavaScript
 
-### PLN e Processamento
-
+### NLP e processamento
 - Transformers
 - Torch
 - YAKE
 
-### Manipulação de Conteúdo e Arquivos
-
+### Manipulação de conteúdo e arquivos
 - httpx
 - BeautifulSoup
 - python-docx
 - pypdf
 
 ### Exportação
-
 - ReportLab
 - pandas
 - openpyxl
 
 ### Testes
-
 - pytest
 
-## Arquitetura
+## Estrutura do projeto
 
 ```text
 websentix/
@@ -79,99 +98,105 @@ websentix/
 ├── requirements.txt
 ├── Dockerfile
 └── run.py
-Camadas
+Arquitetura por camadas
 
-routers/: rotas HTTP, páginas, exportações e endpoints de análise
+routers/: define rotas HTTP, páginas, endpoints de análise e exportação
 
-services/: lógica de negócio para PLN, leitura de arquivos, scraping, histórico e exportação
+services/: concentra a lógica de negócio para NLP, scraping, leitura de arquivos, histórico e exportação
 
-models/: esquemas e enums compartilhados
+models/: reúne schemas, enums e estruturas compartilhadas
 
-utils/: validação, logging e utilitários de limpeza de texto
+utils/: utilitários de validação, limpeza de texto e logging
 
-templates/ e static/: interface web
+templates/ e static/: responsáveis pela interface web
 
-config/: configurações baseadas em ambiente
+config/: centraliza configurações baseadas em ambiente
 
 Instalação
 1. Criar ambiente virtual
-
 Linux/macOS
-
 python -m venv .venv
 source .venv/bin/activate
-
 Windows
-
 python -m venv .venv
 .venv\Scripts\activate
 2. Instalar dependências
 pip install --upgrade pip
 pip install -r requirements.txt
-3. Configurar ambiente
-
+3. Configurar variáveis de ambiente
 Linux/macOS
-
 cp .env.example .env
-
 Windows
-
 copy .env.example .env
-Execução Local
+Como executar o projeto
+Rodando localmente
 python run.py
 
 Ou:
 
 uvicorn app.main:app --reload
 
-Acesse no navegador:
+Acesse em:
 
 http://127.0.0.1:8000
-Execução com Docker
+Rodando com Docker
 docker build -t websentix .
 docker run -p 8000:8000 websentix
-Testes
+Executando os testes
 pytest -q
-Principais Endpoints
+Endpoints principais
+Método	Endpoint	Descrição
+GET	/	Interface principal
+POST	/api/analyze	Análise via formulário
+POST	/api/analyze/json	Retorno da análise em JSON
+GET	/exports/latest/pdf	Exporta o último resultado em PDF
+GET	/exports/latest/txt	Exporta o último resultado em TXT
+GET	/exports/latest/excel	Exporta o último resultado em Excel
+GET	/exports/history/excel	Exporta o histórico em Excel
+GET	/health	Healthcheck da aplicação
 
-GET / — interface principal
-
-POST /api/analyze — análise baseada em formulário
-
-POST /api/analyze/json — endpoint com resposta orientada a JSON
-
-GET /exports/latest/pdf — exporta o resultado mais recente em PDF
-
-GET /exports/latest/txt — exporta o resultado mais recente em TXT
-
-GET /exports/latest/excel — exporta o resultado mais recente em Excel
-
-GET /exports/history/excel — exporta o histórico em Excel
-
-GET /health — verificação de saúde da aplicação
-
-Observações e Limitações
+Limitações
 
 Alguns sites podem bloquear scraping
 
-PDFs digitalizados apenas como imagem podem exigir OCR
+PDFs escaneados em imagem podem exigir OCR
 
 O resumo é extrativo e heurístico
 
-O modelo de sentimento escolhido é multilíngue, não específico de domínio
+O modelo de sentimento é multilíngue, não especializado em um domínio específico
 
-Próximas Melhorias
+Melhorias futuras
 
 Persistência com SQLite ou PostgreSQL
 
 Autenticação e autorização
 
-OCR para PDFs digitalizados
+OCR para PDFs escaneados
 
-Cache do modelo na inicialização
+Cache de modelo na inicialização
 
-Esquemas de resposta REST para todos os endpoints
+Schemas REST completos para todos os endpoints
 
-Jobs assíncronos para documentos grandes
+Processamento assíncrono para documentos grandes
 
 Melhor observabilidade e logging estruturado
+
+Demonstração
+
+Você pode adicionar aqui:
+
+screenshot da interface
+
+GIF de uso
+
+link para deploy
+
+exemplos de entrada e saída
+
+Objetivo do projeto
+
+O WebSentix foi criado para servir como uma base prática e extensível para aplicações de análise textual em português, reunindo processamento de linguagem natural, leitura de múltiplas fontes e exportação de resultados em uma interface simples e funcional.
+
+Licença
+
+Este projeto pode ser distribuído sob a licença MIT.
