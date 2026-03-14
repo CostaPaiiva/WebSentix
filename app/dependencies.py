@@ -1,3 +1,15 @@
+# Configura o Python para aceitar referências de tipos que ainda serão definidos ou importados
+# Importa os serviços do núcleo da aplicação para centralizar o acesso em um único módulo
+# Inicializa os objetos de serviço assim que o módulo é carregado pela primeira vez
+# Cria instâncias globais dos serviços para que sejam compartilhadas por toda a aplicação
+# Disponibiliza a lógica de extração de dados brutos através do ContentExtractor
+# Gerencia a leitura de arquivos físicos do sistema através do FileReaderService
+# Mantém o serviço de histórico ativo para registrar logs ou atividades do usuário
+# Provê a funcionalidade de conversão e exportação de dados via ExportService
+# Oferece acesso ao SentimentService para análise semântica e emocional de textos
+# Define funções de captura (getters) para fornecer os serviços de forma segura e padronizada
+
+
 # Permite o uso de anotações de tipo como strings para evitar problemas de referência circular
 from __future__ import annotations
 
